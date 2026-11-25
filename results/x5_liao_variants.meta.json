@@ -1,0 +1,16 @@
+{
+  "table": "x5_liao_variants",
+  "script": "x5_liao_baseline.py",
+  "generated_utc": "2026-11-15T16:11:56+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_mc": 20000,
+  "raak_node_budget": 20000,
+  "note": "Liao et al. reimplemented from the paper; the step from [e], [f] to [|V|] is not specified there (interval arithmetic used)"
+}

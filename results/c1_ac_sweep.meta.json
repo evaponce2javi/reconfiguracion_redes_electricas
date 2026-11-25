@@ -1,0 +1,17 @@
+{
+  "table": "c1_ac_sweep",
+  "script": "c1_ac_sweep.py",
+  "generated_utc": "2026-11-15T02:09:12+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_samples_per_cell": 20000,
+  "load_scaling": "P_d, Q_d and scheduled P_g multiplied by the load factor",
+  "near_limit_fraction": 0.95,
+  "radius_reference_for_relative_error": "CD-HIM lambda_max output radius"
+}

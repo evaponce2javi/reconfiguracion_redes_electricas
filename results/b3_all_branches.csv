@@ -1,0 +1,5 @@
+system,model,n_samples,seed,n_ellipse_branches,mean_pct,median_pct,p99_pct,max_pct,n_branches_over_0.27pct,n_branches_over_0.27pct_by_3_std_errors
+ieee33,legacy,200000,2964640605,16,0.02246875,0.01975,0.0618,0.063,0,0
+ieee33,corrected,200000,2964640605,21,0.09476190476,0.0975,0.147,0.148,0,0
+pegase2869,legacy,200000,405828888,2984,0.05540030161,0.0445,0.1805,0.2225,0,0
+pegase2869,corrected,200000,405828888,2543,0.1017902084,0.1005,0.241,0.261,0,0

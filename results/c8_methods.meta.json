@@ -1,0 +1,16 @@
+{
+  "table": "c8_methods",
+  "script": "c8_methods.py",
+  "generated_utc": "2026-11-15T02:14:32+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_ac": 20000,
+  "threads": 1,
+  "note": "all interval methods share the corrected linear model; time_s of an interval method = linearisation + sensitivities + its own stage, excluding the base power flow; the pandapower loop time is an extrapolation from 200 timed power flows"
+}

@@ -1,0 +1,12 @@
+table,network,setup,rho_U,eps_ave_published_pct,eps_ave_pct,eps_max_published_pct,eps_max_pct,converged,iterations
+I,33,"five sources of Fig. 10; rho_D = 1, rho_G = 0.5, pf = 0.8",0,7.5e-09,5.747236119e-09,1.3e-08,1.620586862e-08,True,17
+I,33,"five sources of Fig. 10; rho_D = 1, rho_G = 0.5, pf = 0.8",0.5,0.086,0.08600151604,0.17,0.1716770359,True,17
+I,33,"five sources of Fig. 10; rho_D = 1, rho_G = 0.5, pf = 0.8",1,0.18,0.1762894418,0.34,0.3439731323,True,17
+VI,33,"source at bus 1 + 10k, total rating = |sum of loads|; scenario F",0.8,0.065,0.07368097213,0.14,0.1287672265,True,17
+VII,33,"source at bus 1 + 10k, total rating = |sum of loads|; scenario R",0.5,0.074,0.08115575269,0.14,0.1281854317,True,17
+VI,69,"source at bus 1 + 10k, total rating = |sum of loads|; scenario F",0.8,0.012,0.009845147385,0.026,0.01930655419,True,18
+VII,69,"source at bus 1 + 10k, total rating = |sum of loads|; scenario R",0.5,0.020,0.01545415066,0.049,0.03636253944,True,18
+VI,85,"source at bus 1 + 10k, total rating = |sum of loads|; scenario F",0.8,0.14,0.1458697119,0.19,0.1884088419,True,22
+VII,85,"source at bus 1 + 10k, total rating = |sum of loads|; scenario R",0.5,0.17,0.1663180278,0.20,0.1967260186,True,22
+VI,141,"source at bus 1 + 10k, total rating = |sum of loads|; scenario F",0.8,0.051,0.0513555277,0.084,0.08427589403,True,9
+VII,141,"source at bus 1 + 10k, total rating = |sum of loads|; scenario R",0.5,0.058,0.05815275217,0.074,0.07401561996,True,8

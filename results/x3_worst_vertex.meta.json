@@ -1,0 +1,16 @@
+{
+  "table": "x3_worst_vertex",
+  "script": "x3_worst_vertex.py",
+  "generated_utc": "2026-11-15T15:49:10+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "reference": "exact AC at all 2^K vertices, results/x2_bus.csv",
+  "tolerance_pu": 1e-09,
+  "note": "deterministic; no random numbers"
+}

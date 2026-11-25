@@ -1,0 +1,60 @@
+{
+  "table": "x10_limits",
+  "script": "x10_three_phase.py",
+  "generated_utc": "2026-11-15T22:43:36+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "seed_base": 20261114,
+  "samples_per_case": 4000,
+  "rho_U": [
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    0.8
+  ],
+  "tolerance_pu": 1e-09,
+  "raak": "all symbols in one block search, node budget 20000, forms normalised",
+  "network": "pandapower.networks.ieee_european_lv_asymmetric('on_peak_566') without its transformer: ideal source at the low-voltage busbar; phase-coordinate model of cdhim.threephase",
+  "base_mva_three_phase": 0.1,
+  "sources": "single-phase inverter at every 5-th load of the load table, on the phase of the load; equal ratings, total = |sum of the loads| (times the factor in x10_limits)",
+  "scenarios": {
+    "F": {
+      "rho_D": 1.0,
+      "rho_G": 0.5,
+      "pf": 0.8,
+      "rho_U": 0.8
+    },
+    "R": {
+      "rho_D": 0.5,
+      "rho_G": 1.0,
+      "pf": 0.8,
+      "rho_U": 0.5
+    }
+  },
+  "reference": "attained values (local search + 9 boundary load flows + random samples), not exact extremes",
+  "limits": {
+    "rating_factors": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      6.0,
+      8.0
+    ],
+    "rho_U": 0.8,
+    "scenario": "R"
+  },
+  "validation_snapshots": [
+    "on_peak_566",
+    "off_peak_1",
+    "off_peak_1440"
+  ],
+  "note": "times are single runs on a shared machine: indicative only"
+}

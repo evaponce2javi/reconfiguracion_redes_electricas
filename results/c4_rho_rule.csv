@@ -1,0 +1,13 @@
+system,model,gain_box,gamma_th,rho_th_equivalent,exact_equivalence_expected,n_branches,n_ellipse_gain_rule,n_ellipse_rho_rule,n_branches_changed,same_selection,cri_area_gain_pct,cri_area_rho_pct,width_red_vs_affine_gain_pct,width_red_vs_affine_rho_pct,time_gain_rule_ms,time_rho_rule_ms,bus_ac_mean_gain_pct,bus_ac_max_gain_pct,ellipse_lin_mean_gain_pct,ellipse_ac_mean_gain_pct,mc_seed,mc_n,bus_ac_mean_rho_pct,bus_ac_max_rho_pct,ellipse_lin_mean_rho_pct,ellipse_ac_mean_rho_pct
+ieee33,legacy,covariance_1sigma,0.15,0,True,31,16,16,0,True,86.70211099,86.70211099,9.00308762,9.00308762,0.5462999979,0.3455500118,,,,,,,,,,
+ieee33,legacy,covariance_3sigma,0.15,0.5674272791,True,31,16,16,0,True,82.52213086,82.52213086,9.00308762,9.00308762,0.3263999824,0.3854999668,,,,,,,,,,
+ieee33,legacy,affine,0.15,0,False,31,16,16,0,True,94.39350902,94.39350902,9.00308762,9.00308762,0.5761000211,0.3373499785,,,,,,,,,,
+ieee33,corrected,covariance_1sigma,0.15,0,True,31,21,21,0,True,86.3734711,86.3734711,42.78121744,42.78121744,0.3487500071,0.3504499909,,,,,,,,,,
+ieee33,corrected,covariance_3sigma,0.15,0.5674272791,True,31,21,21,0,True,82.09018824,82.09018824,42.78121744,42.78121744,0.3352499916,0.3328500025,,,,,,,,,,
+ieee33,corrected,affine,0.15,0,False,31,21,21,0,True,97.36864048,97.36864048,42.78121744,42.78121744,0.3515499702,0.3195499885,,,,,,,,,,
+pegase2869,legacy,covariance_1sigma,0.15,0,True,3218,2984,2984,0,True,57.79729886,57.79729886,11.05340975,11.05340975,95.87965001,103.52185,,,,,,,,,,
+pegase2869,legacy,covariance_3sigma,0.15,0.5674272791,True,3218,2227,2227,0,True,58.54618046,58.54618046,14.74221932,14.74221932,101.77055,99.58630003,,,,,,,,,,
+pegase2869,legacy,affine,0.15,0,False,3218,2962,2984,22,False,84.29407118,83.69459785,11.95402393,11.05340975,93.72369997,102.76255,,,,,,,,,,
+pegase2869,corrected,covariance_1sigma,0.15,0,True,3216,2543,2543,0,True,71.0837718,71.0837718,34.11862468,34.11862468,103.0078,98.75295003,,,,,,,,,,
+pegase2869,corrected,covariance_3sigma,0.15,0.5674272791,True,3216,2339,2339,0,True,66.90066144,66.90066144,35.73932266,35.73932266,106.36065,105.32645,,,,,,,,,,
+pegase2869,corrected,affine,0.15,0,False,3216,2542,2543,1,False,96.01360749,95.97913168,34.92051341,34.11862468,96.08940003,102.10135,0.002670623145,0.44,0.1021793863,0.1082061369,1478399781,5000,0.002670623145,0.44,0.1021392057,0.1081635863

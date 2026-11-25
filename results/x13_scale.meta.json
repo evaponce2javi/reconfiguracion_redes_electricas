@@ -1,0 +1,44 @@
+{
+  "table": "x13_scale",
+  "script": "experiments/x13_scale.py",
+  "generated_utc": "2026-11-17T14:38:15+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "pf_tol": 1e-09,
+  "rho_U": [
+    0.1,
+    0.5
+  ],
+  "fixed_sources": [
+    8,
+    32
+  ],
+  "samples": 400,
+  "raak_node_budget": 20000,
+  "time_limit_s": 3600,
+  "tensor_limit_gb": 1.0,
+  "tensor_copies": 12,
+  "dense_copies": 15,
+  "min_width_pu": 1e-09,
+  "networks": {
+    "118 + ties": "MATPOWER 7.1 case118zh with its 15 tie lines closed",
+    "136 + ties": "MATPOWER 7.1 case136ma with its 21 tie lines closed",
+    "141": "MATPOWER 7.1 case141, radial",
+    "Oberrhein": "pandapower mv_oberrhein, 20 kV, all switches closed",
+    "533": "MATPOWER 8.0 case533mt_hi, radial",
+    "533 + ties": "MATPOWER 8.0 case533mt_hi with its 45 tie lines closed",
+    "Schutterwald": "pandapower lv_schutterwald, 0.4 kV with 14 MV/LV transformers, all switches closed"
+  },
+  "quadratic_bounds": {
+    "termwise": "no blocks",
+    "k3": "RAA-K blocks of up to 3 symbols",
+    "full": "RAA-K blocks of any size"
+  },
+  "note": "one process per case; timings are wall-clock and depend on what else runs on the machine"
+}

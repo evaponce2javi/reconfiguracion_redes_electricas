@@ -1,0 +1,93 @@
+{
+  "table": "x9_krawczyk_subdivision",
+  "script": "x9_krawczyk.py",
+  "generated_utc": "2026-11-15T22:39:33+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "raak_node_budget": 20000,
+  "samples_per_case": 4000,
+  "rho_U": [
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    0.8
+  ],
+  "load_deltas": [
+    0.05,
+    0.15,
+    0.3,
+    0.5
+  ],
+  "load_zones": 8,
+  "seed_rule": "common.seed_for('x8', network, scenario, rho_U): the reference values are those of X8; stored per row",
+  "variants": [
+    {
+      "formulation": "power mismatch",
+      "matrix": "derivative",
+      "rotated": false
+    },
+    {
+      "formulation": "power mismatch",
+      "matrix": "derivative",
+      "rotated": true
+    },
+    {
+      "formulation": "power mismatch",
+      "matrix": "slope",
+      "rotated": false
+    },
+    {
+      "formulation": "power mismatch",
+      "matrix": "slope",
+      "rotated": true
+    },
+    {
+      "formulation": "current injection",
+      "matrix": "derivative",
+      "rotated": false
+    },
+    {
+      "formulation": "current injection",
+      "matrix": "derivative",
+      "rotated": true
+    },
+    {
+      "formulation": "current injection",
+      "matrix": "slope",
+      "rotated": false
+    },
+    {
+      "formulation": "current injection",
+      "matrix": "slope",
+      "rotated": true
+    }
+  ],
+  "tighter_atol_pu": 1e-12,
+  "subdivision": {
+    "max_symbols": 8,
+    "max_pieces": 256,
+    "variant": {
+      "formulation": "current injection",
+      "matrix": "slope",
+      "rotated": true
+    }
+  },
+  "networks": {
+    "33": "MATPOWER 7.1 case33bw, radial",
+    "69": "MATPOWER 7.1 case69, radial",
+    "85": "MATPOWER 7.1 case85, radial",
+    "141": "MATPOWER 7.1 case141, radial",
+    "33 + ties": "case33bw with its five tie lines closed",
+    "33 + shunts": "case33bw, radial, with line charging (300 nF/km) and two 0.3 Mvar capacitor banks (own modification)",
+    "CIGRE MV": "pandapower CIGRE MV network, all switches closed: cables with charging, two 110/20 kV transformers",
+    "Oberrhein": "pandapower MV Oberrhein network, all switches closed: two 110/20 kV transformers, two slack buses"
+  },
+  "note": "bounds valid in exact arithmetic, no outward rounding; reference = best attained values (exact vertex range in the load boxes); times are indicative, other jobs were running"
+}

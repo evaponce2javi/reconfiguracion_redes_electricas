@@ -1,0 +1,36 @@
+{
+  "table": "x2_summary",
+  "script": "x2_few_sources.py",
+  "generated_utc": "2026-11-15T15:20:38+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_mc": 20000,
+  "enumerate_vertices_up_to": 16,
+  "seeds": {
+    "ieee33/slack/K=4/delta=0.15": 2644041414,
+    "ieee33/slack/K=8/delta=0.15": 3530622676,
+    "ieee33/slack/K=16/delta=0.15": 2644864591,
+    "ieee33/slack/K=4/delta=0.05": 177573670,
+    "ieee33/slack/K=4/delta=0.3": 2750492294,
+    "pegase2869/slack/K=8/delta=0.05": 825888842,
+    "pegase2869/slack/K=16/delta=0.05": 3422915439,
+    "pegase2869/slack/K=32/delta=0.05": 3387216974,
+    "pegase2869/slack/K=64/delta=0.05": 4250134828,
+    "pegase2869/slack/K=8/delta=0.01": 2931906139,
+    "pegase2869/slack/K=8/delta=0.02": 2003931817,
+    "pegase2869/participation/K=8/delta=0.05": 3845821847,
+    "pegase2869/participation/K=16/delta=0.05": 1325587116,
+    "pegase2869/participation/K=32/delta=0.05": 3870592586,
+    "pegase2869/participation/K=64/delta=0.05": 2392618689,
+    "pegase2869/participation/K=8/delta=0.01": 1193293901,
+    "pegase2869/participation/K=8/delta=0.02": 3029599601
+  },
+  "raak_node_budget": 20000,
+  "note": "second-order bound; third order measured, not bounded; no outward rounding; raak_* = group's RAA-K (cdhim.knomial)"
+}

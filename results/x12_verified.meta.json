@@ -1,0 +1,40 @@
+{
+  "table": "x12_verified",
+  "script": "experiments/x12_verified.py",
+  "generated_utc": "2026-11-17T13:24:52+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "pf_tol": 1e-09,
+  "rho_U": [
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    0.8
+  ],
+  "samples": 4000,
+  "raak_node_budget": 20000,
+  "bracket_tol": 0.0001,
+  "bracket_boxes": 3000,
+  "min_width_pu": 1e-09,
+  "subdivision_tol": 0.01,
+  "subdivision_boxes": 3000,
+  "networks": {
+    "33": "MATPOWER 7.1 case33bw, radial",
+    "69": "MATPOWER 7.1 case69, radial",
+    "85": "MATPOWER 7.1 case85, radial",
+    "141": "MATPOWER 7.1 case141, radial",
+    "33 + ties": "case33bw with its five tie lines closed",
+    "33 + shunts": "case33bw, radial, with line charging (300 nF/km) and two 0.3 Mvar capacitor banks (own modification)",
+    "CIGRE MV": "pandapower CIGRE MV network, all switches closed: cables with charging, two 110/20 kV transformers",
+    "Oberrhein": "pandapower MV Oberrhein network, all switches closed: two 110/20 kV transformers, two slack buses",
+    "European LV, 3 phases": "low-voltage side of the IEEE European LV feeder, merged (X10)"
+  },
+  "note": "directed rounding by stepping to the adjacent floating-point number and a priori bounds of sums (cdhim.verified); the reference points are verified power-flow solutions (cdhim.certified)"
+}

@@ -1,0 +1,15 @@
+{
+  "table": "c5_system_level",
+  "script": "c5_system_level.py",
+  "generated_utc": "2026-11-15T01:42:58+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_samples": 20000,
+  "note": "any_* = share of samples with at least one violation; Bonferroni uses chi2_2 at 1 - 0.0027/m; cri_area_cov_box is scale free (unchanged by the quantile), cri_area_vs_affine_box is not"
+}

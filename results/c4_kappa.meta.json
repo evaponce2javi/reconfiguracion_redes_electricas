@@ -1,0 +1,15 @@
+{
+  "table": "c4_kappa",
+  "script": "c4_rho_rule.py",
+  "generated_utc": "2026-11-15T01:40:59+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "gamma_th": 0.15,
+  "note": "times are medians of 20 runs of the branch stage only"
+}

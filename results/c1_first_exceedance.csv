@@ -1,0 +1,13 @@
+system,criterion,n_cells,n_cells_over_0.27pct,first_load_factor,first_delta,value_pct
+ieee33,bus mean (lambda_max interval),25,0,,,
+ieee33,bus max (lambda_max interval),25,1,3.4408,0.15,0.47129606417648534
+ieee33,bus max (coordinate interval),25,3,3.4408,0.1,0.295
+ieee33,ellipse mean (Mahalanobis),25,3,3.4408,0.1,0.37281250000000005
+ieee33,ellipse max (Mahalanobis),25,4,3.4408,0.1,0.52
+ieee33,system level (lambda_max interval),25,1,3.4408,0.15,0.4813236400100276
+pegase2869,bus mean (lambda_max interval),25,0,,,
+pegase2869,bus max (lambda_max interval),25,24,0.8,0.1,0.67
+pegase2869,bus max (coordinate interval),25,25,0.8,0.05,0.43499999999999994
+pegase2869,ellipse mean (Mahalanobis),25,4,1.2,0.3,0.27563400000000005
+pegase2869,ellipse max (Mahalanobis),25,25,0.8,0.05,1.7049999999999998
+pegase2869,system level (lambda_max interval),25,25,0.8,0.05,2.97

@@ -1,0 +1,16 @@
+{
+  "table": "c3_nongaussian",
+  "script": "c3_nongaussian.py",
+  "generated_utc": "2026-11-15T01:30:26+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_linear": 200000,
+  "n_ac": 5000,
+  "note": "all Ellipse-mode branches; independent sources; AC samples use seed + 1"
+}

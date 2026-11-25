@@ -1,0 +1,16 @@
+{
+  "table": "x6_fixed_point",
+  "script": "x6_fixed_point.py",
+  "generated_utc": "2026-11-15T16:43:59+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "K": 8,
+  "raak_node_budget": 20000,
+  "note": "deterministic; valid in exact arithmetic, no outward rounding; reference = exact AC at all 2^K vertices"
+}

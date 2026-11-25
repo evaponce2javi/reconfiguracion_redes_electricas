@@ -1,0 +1,16 @@
+{
+  "table": "c6_gamma_transfer",
+  "script": "c6_gamma_transfer.py",
+  "generated_utc": "2026-11-15T01:43:56+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "n_ac": 5000,
+  "timing_repeats": 10,
+  "note": "time = median of the branch stage (covariances, eigenvalues, decision, radii); the decision needs the spectra of every branch, so run time cannot depend on gamma_th beyond noise"
+}

@@ -1,0 +1,6 @@
+uncertain_variables,K,max_abs_diff_exact_range_vs_paper_mc,max_abs_diff_mc_here_vs_paper_mc,max_abs_diff_liao_here_vs_paper,max_abs_diff_direct_af2_vs_paper,paper_interval_contains_exact_range_buses
+"generator P, load P and Q",8,0.006222468675,0.006064763832,0.01180932327,0.007736970904,0
+load P and Q,6,0.00648080573,0.006802132893,0.009361893733,0.01042395493,6
+"generator P, load P",5,0.007869896065,0.008064857292,0.009479809407,0.01054548157,6
+load P,3,0.009093959996,0.009097388554,0.01256537433,0.01362059393,6
+generator P,2,0.008626999385,0.008638134766,0.01279227161,0.01279706909,6

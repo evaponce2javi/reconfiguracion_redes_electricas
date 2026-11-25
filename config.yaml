@@ -1,0 +1,65 @@
+# CD-HIM: single source of every tunable number. Experiments read this file; nothing is hard-coded.
+
+method:
+  gamma_th: 0.15              # gain threshold (fraction of area)
+  delta_stab: 1.0e-3          # Ellipse only if |rho| < 1 - delta_stab
+  confidence: 0.9973          # 3-sigma equivalent; chi2_2 quantile = 11.829
+  radius: lambda_max          # lambda_max (manuscript Eq. 11) | coordinate (exact projection sqrt(chi2*Q_ii))
+  gain_box: covariance_1sigma # box used inside G:
+                              #   covariance_1sigma -> ellipse and box at the same scale, kappa = pi/4 (original code)
+                              #   covariance_3sigma -> chi2 ellipse vs 3-sigma (CLTM) box, kappa = pi*chi2/36 = 1.032
+                              #   affine            -> chi2 ellipse vs sum|c_k| box, kappa is branch dependent
+  selection_rule: gain        # gain (G >= gamma_th) | rho (|rho| >= rho_th)
+  rho_th: null
+  bus_combine: min            # a bus in several Ellipse branches keeps the smallest (min) or largest (max) radius
+  clip_to_affine_box: false   # true: never return an interval wider than the affine box
+  min_radius_pu: 1.0e-10      # a bus with affine radius below this is numerically deterministic; its branches are skipped
+  min_sigma_product: 0.0      # original code: skip branches with sx*sy <= 1.0e-12 (absolute, moves with delta); 0 disables
+
+linearization:
+  point: converged            # converged (AC solution, as the manuscript states) | flat (original code)
+  jacobian: exact             # exact | legacy_signbug (original code, only to reproduce the submitted figures)
+  permc_spec: COLAMD          # SuperLU column ordering: COLAMD | MMD_AT_PLUS_A | MMD_ATA | NATURAL
+
+uncertainty:
+  min_injection_pu: 1.0e-6    # demands below this [p.u.] are not uncertain
+                              # Var(eps) = 1/3 (eps ~ U[-1, 1]) is the default Sigma_eps = I/3; pass a
+                              # cdhim.SourceCovariance to Study.run() for any other covariance of the symbols
+
+powerflow:
+  tol_pu: 1.0e-9              # max mismatch of every accepted AC sample
+  max_chord: 40
+  batch: 1000
+
+systems:                      # delta = relative half-width of every uncertain injection (design point)
+  ieee33:     {case: case33bw,                  delta: 0.15, label: "IEEE-33"}
+  pegase2869: {case: pglib_opf_case2869_pegase, delta: 0.05, label: "PEGASE-2869"}
+
+scaling_cases: [case33bw, case118, case300, case1354pegase, case2869pegase, case9241pegase]
+transfer_cases: [case33bw, case118, case300, case1354pegase, case2869pegase]
+transfer_delta: {case33bw: 0.15, default: 0.05}
+
+experiments:
+  seed: 20261114              # base seed; each experiment derives its own stream from it and stores it
+  n_ac: 20000                 # AC Monte Carlo samples at the design point (B1, C5, C8)
+  n_linear: 200000            # linear-model samples (B3, C3)
+  n_sweep: 20000              # AC samples per cell of the load x delta sweep (C1)
+  n_corr: 20000               # samples per correlation level (C2)
+  n_transfer: 5000            # AC samples per system (C6)
+  n_nongaussian_ac: 5000      # AC samples per marginal (C3)
+  n_rule_mc: 5000             # samples when two selection rules differ (C4)
+  timing_repeats: 10          # C7
+  load_factors: [0.8, 1.0, 1.2, 1.4]
+  near_limit_fraction: 0.95   # fifth load level = this fraction of the loadability limit
+  deltas: [0.05, 0.10, 0.15, 0.20, 0.30]
+  gammas: [0.05, 0.10, 0.15, 0.20, 0.25]
+  copula_r: [0.0, 0.3, 0.6, 0.9]
+  # X2 (few aggregated sources): number of zones per system, balancing model and how far vertices are enumerated
+  zone_counts: {ieee33: [4, 8, 16], pegase2869: [8, 16, 32, 64]}
+  balancing: {ieee33: [slack], pegase2869: [slack, participation]}   # slack = manuscript; participation = generators share the imbalance
+  enumerate_vertices_up_to: 16   # exact AC at all 2^K vertices up to this K; adversarial vertices above it
+  x2_delta_sweep: {ieee33: [0.05, 0.30], pegase2869: [0.01, 0.02]}   # extra half-widths, with the smallest K only
+  raak_node_budget: 20000
+  x8_rho_u: [0.05, 0.1, 0.2, 0.5, 0.8]     # uncertain share of the inverter ratings (rho_U of Sou et al., Eq. 43)
+  x8_samples: 4000                         # random injections per case used as an independent check
+  x8_load_deltas: [0.05, 0.15, 0.30, 0.50] # half-widths of the load boxes (8 zones) of the last table        # nodes of the clique search of RAA-K per quadratic form when max_k >= 6 (0 = no cap)

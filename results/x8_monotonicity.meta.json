@@ -1,0 +1,28 @@
+{
+  "table": "x8_monotonicity",
+  "script": "x8_feeders.py",
+  "generated_utc": "2026-11-15T19:43:26+00:00",
+  "git_commit": "4750ce2",
+  "versions": {
+    "python": "3.12.10",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "raak_node_budget": 20000,
+  "samples_per_case": 4000,
+  "seed_rule": "common.seed_for('x8', network, scenario, rho_U), stored per row",
+  "wclf_initial_current_A": 5000.0,
+  "networks": {
+    "33": "MATPOWER 7.1 case33bw, radial",
+    "69": "MATPOWER 7.1 case69, radial",
+    "85": "MATPOWER 7.1 case85, radial",
+    "141": "MATPOWER 7.1 case141, radial",
+    "33 + ties": "case33bw with its five tie lines closed",
+    "33 + shunts": "case33bw, radial, with line charging (300 nF/km) and two 0.3 Mvar capacitor banks (own modification)",
+    "CIGRE MV": "pandapower CIGRE MV network, all switches closed: cables with charging, two 110/20 kV transformers",
+    "Oberrhein": "pandapower MV Oberrhein network, all switches closed: two 110/20 kV transformers, two slack buses"
+  },
+  "note": "bounds valid in exact arithmetic, no outward rounding; reference = best attained values, not exact extremes"
+}
