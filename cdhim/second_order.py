@@ -97,6 +97,23 @@ class SecondOrder:
             out -= self.bv.T @ (a.real ** 2 + a.imag ** 2)
         return out
 
+    def state(self, eps):
+        """Complex bus-voltage change to second order, dV1 + dV2 with dV2 = -J^-1 q(dV1), shape (n_bus, B).
+
+        q is the quadratic part of the power-flow equations in rectangular coordinates, row by row as J:
+        Re(dV conj(Y dV)) at PV and PQ buses, Im(.) at PQ buses, |dV|^2 at PV buses."""
+        g = self.st.grid
+        ns, pq = g.pvpq, g.pq
+        a = self.E @ eps
+        z = a * np.conj(self.Y @ a)
+        rows = [z.real[ns], z.imag[pq]]
+        if self.has_pv:
+            rows.append(np.abs(a[g.pv]) ** 2)
+        d2 = -solve_blocked(self.lu, np.vstack(rows))
+        out = a.copy()
+        out[ns] += d2[:self.m] + 1j * d2[self.m:]
+        return out
+
     def trace(self):
         s = np.einsum("mk,mk->m", self.E, self.F.conj())
         e2 = np.einsum("mk,mk->m", self.E, self.E.conj()).real

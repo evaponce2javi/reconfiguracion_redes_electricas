@@ -20,6 +20,7 @@ the first-order rule and the second-order search, against the deterministic boun
     python experiments/b5_affine_forms.py sweep        # load x delta sweep of C1 (Monte Carlo only, no vertex search)
     python experiments/b5_affine_forms.py surrogate    # coverage and cost against the number of surrogate samples
     python experiments/b5_affine_forms.py radii        # Gaussian, Bernstein, Hoeffding, unimodal and Chebyshev radii
+    python experiments/b5_affine_forms.py sweep250     # the sweep with 250 samples of the quadratic term
 Writes results/b5_mc.csv, results/b5_vertex.csv, results/b5_width.csv (design) or results/b5_sweep.csv
 """
 from time import perf_counter
@@ -428,6 +429,17 @@ def main():
         rows = [r for k in CFG["systems"] for r in run_surrogate(k)]
         print(save_table("b5_surrogate", rows, {"n_samples": EXP["n_ac"], "alpha": ALPHA,
                                                 "note": "run alone: the t_* columns are the single-process cost of the method"}))
+        return
+    if "sweep250" in sys.argv[1:]:                                   # the sweep with 250 surrogate samples
+        global N_SURROGATE
+        N_SURROGATE = 250
+        tasks = []
+        for key, sysc in CFG["systems"].items():
+            lam_max, _ = loadability_limit(grid(sysc["case"]), tol=CFG["powerflow"]["tol_pu"])
+            levels = [(lf, "fixed") for lf in EXP["load_factors"]] + [(round(EXP["near_limit_fraction"] * lam_max, 4), "near_limit")]
+            tasks += [(key, lf, tag, lam_max) for lf, tag in levels]
+        rows = [r for o in parallel(run_sweep, tasks, workers=3) for r in o]
+        print(save_table("b5_sweep_n250", rows, {"n_samples_per_cell": EXP["n_sweep"], "n_surrogate": 250, "alpha": ALPHA}))
         return
     if "sweep" in sys.argv[1:]:
         tasks = []
