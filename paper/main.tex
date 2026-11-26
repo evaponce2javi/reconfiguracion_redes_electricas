@@ -1,0 +1,249 @@
+% =============================================================================================================
+% Skeleton of the affine-forms paper. Target: International Journal of Electrical Power & Energy Systems (IJEPES).
+% Compile on Overleaf with the Elsevier "elsarticle" class (not installed in the repository container).
+% Red notes (\plan, \nota) are for the authors and must disappear before submission: see paper/README.md.
+% Every number in the paper must come from RESULTS.md / results/*.csv; the section and CSV are given next to it.
+% =============================================================================================================
+\documentclass[preprint,12pt]{elsarticle}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\plan}[1]{\textcolor{red}{[PLAN: #1]}}
+\newcommand{\nota}[1]{\textcolor{red}{[NOTA: #1]}}
+\newcommand{\src}[1]{\textcolor{blue}{[#1]}}          % where the number comes from (RESULTS.md section / CSV)
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+
+\journal{International Journal of Electrical Power \& Energy Systems}
+
+\begin{document}
+\begin{frontmatter}
+
+% \nota{Título: tres opciones; elegir una.}
+% (a) Coverage-guaranteed probabilistic bounds on voltages and branch currents from sparse affine forms
+% (b) Why linearized probabilistic power flow fails in the tails, and a second-order range that fixes it
+% (c) Certified probabilistic voltage and branch-current bounds with the range of the second-order term
+\title{Coverage-guaranteed probabilistic bounds on voltages and branch currents from sparse affine forms and the range of the second-order term}
+
+\author[pucv]{Eva Ponce-Fernández}
+\author[pucv]{Juan Geraldo-Ulloa}
+\author[pucv]{Ignacio Araya\corref{cor}}
+\cortext[cor]{Corresponding author}
+\affiliation[pucv]{organization={Escuela de Ingeniería Informática, Pontificia Universidad Católica de Valparaíso},
+            city={Valparaíso}, country={Chile}}
+% \nota{Verificar en la guía de IJEPES el formato de autores, correo de contacto y si la revisión es simple o doble ciego.}
+
+\begin{abstract}
+% \nota{Borrador. Unas 190 palabras como en IJEPES 2026 (Basirat et al.); verificar el límite en la guía. Cifras: §28.8, §28.12.}
+Linearized probabilistic power flow models are fast and widely used to bound bus voltages and branch flows under
+uncertain injections, but their bounds are rarely checked where operational decisions are taken: in the extreme
+tails. We show on four test systems of up to 2869 buses that Gaussian, cumulant and point-estimate methods leave
+between 0.3\% and 100\% of nonlinear AC samples outside bounds designed for 0.27\%, and that correcting the
+linearization with the mean and variance of the second-order term, as existing second-order methods do, is not
+enough. The reason is that the linearization error is skewed and heavy-tailed. We propose to bound each output with
+its sparse affine form, a distribution-free concentration radius, and the range of the exact second-order term,
+sampled from a closed-form quadratic model without solving any power flow. An order-statistics argument turns the
+sampled range into a provable coverage level for the second-order model. The bounds cover the AC samples in every
+tested case, from 80\% load to 95\% of the loadability limit, with dispersion levels up to 30\%, correlated sources
+and eight bounded input distributions, for bus voltages, branch voltage drops and branch currents, in about 10\,s on
+PEGASE-2869.
+\end{abstract}
+
+\begin{highlights}
+% \nota{Elsevier: normalmente 3 a 5 viñetas de hasta 85 caracteres. Verificar en la guía.}
+\item Linearized probabilistic bounds fail in the tails against the AC power flow
+\item The linearization error is skewed and heavy-tailed: moments cannot fix it
+\item The range of the exact second-order term restores coverage
+\item Order statistics give a provable coverage level at small extra width
+\item Validated on four systems up to 2869 buses, for voltages and branch currents
+\end{highlights}
+
+\begin{keyword}
+Probabilistic power flow \sep Affine arithmetic \sep Linearization error \sep Concentration inequalities \sep
+Branch currents \sep Coverage guarantee
+\end{keyword}
+\end{frontmatter}
+
+% \nota{Nomenclatura: IJEPES 2026 la incluye. Armarla al final.}
+
+% =============================================================================================================
+\section{Introduction}\label{sec:intro}
+
+\plan{P1. Motivación. Reutilizar y acortar el primer párrafo de caja-elipse.tex (incertidumbre renovable;
+necesidad de cotas de voltaje y de carga de líneas). Sin la parte de ``rigorous containment''.}
+
+\plan{P2. Dos familias: (i) intervalos y aritmética afín (Vaccaro 2010; Dimitrovski 2004): deterministas, sufren
+el problema de dependencia o se vuelven muy anchos; (ii) flujo probabilístico: Monte Carlo (caro), cumulantes
+\cite{zhang2004cumulant}, estimación por puntos \cite{hong1998pem}, caos polinomial, y restricciones de azar con
+linealización en el punto AC \cite{roald2018ccacopf,lubin2019chance}. Los métodos analíticos se validan comparando
+momentos o curvas de densidad, casi nunca la cobertura de los cuantiles extremos.}
+
+\plan{P3. Segundo orden: existe desde \cite{brucoli1985quadratic}; versión analítica moderna en
+\cite{sandoval2022second}; no lineal por holomorphic embedding \cite{liu2018holomorphic}; expansiones para la
+densidad \cite{basirat2026soeae}; estimación por puntos para las colas \cite{singh2025pem}. Todos propagan momentos
+o cumulantes, validan con curvas y llegan a 118 barras como máximo (RELATED\_WORK.md, sexta pasada).}
+
+\plan{P4. El hueco: nadie verifica (ni garantiza) la cobertura al nivel del 0,27\,\% a escala de transmisión, y
+mostramos que los momentos del segundo orden no alcanzan. Concentración sobre formas afines existe fuera de
+sistemas de potencia \cite{bouissou2016affine}.}
+
+\plan{P5. Contribuciones (lista):
+(1) evidencia de que los métodos linealizados (3$\sigma$, cumulantes, estimación por puntos) y la corrección de
+segundo orden por momentos no cubren en las colas, y de por qué (asimetría y cola pesada del error de
+linealización) [§27.1, §27.2, §28.8];
+(2) cotas por forma afín dispersa + radio de concentración + rango del término de segundo orden, muestreado de un
+modelo cuadrático cerrado, sin flujos de potencia [§28.1, §28.3];
+(3) nivel de cobertura demostrable para el modelo de segundo orden por estadísticos de orden [§28.12];
+(4) la misma construcción para caídas de voltaje y corrientes de rama, donde la corrección es imprescindible
+[§28.9];
+(5) validación en 4 sistemas hasta 2.869 barras, estrés de carga, correlación, distribuciones no uniformes, y
+límites medidos (peor caso en vértices, cobertura simultánea) [§28.2, §28.6, §28.7, §28.10].}
+
+\plan{P6. Organización del artículo.}
+
+% =============================================================================================================
+\section{Affine forms of the power-flow outputs}\label{sec:forms}
+
+\subsection{Uncertainty model}
+\plan{Reutilizar §II-B de caja-elipse.tex: forma afín $\hat x = x_0 + \sum_k x_k\varepsilon_k$; una fuente por $P_d$ y
+otra por $Q_d$ de cada carga, con semiancho $r_k = \delta|S_k^0|$. Supuestos explícitos (Assumption~\ref{as:sym}).}
+
+\begin{assumption}\label{as:sym}
+The symbols $\varepsilon_k$ are independent, have zero mean, take values in $[-1,1]$ and have variance at most
+$\sigma_\varepsilon^2$ ($\sigma_\varepsilon^2 = 1/3$ by default). Their joint law is known well enough to sample it.
+\end{assumption}
+\nota{Correlación: con factores compartidos $\varepsilon_k = w\zeta_{z(k)} + (1-w)\eta_k$ el supuesto se cumple sobre los
+símbolos $(\zeta,\eta)$ [§28.6]. Discutirlo aquí o en §\ref{sec:limits}.}
+
+\subsection{Sparse first-order forms}
+\plan{Reutilizar §II-A y §III-A de caja-elipse.tex (linealización en el punto AC convergido, LU dispersa con COLAMD,
+SuperLU, sin invertir $J$), quitando todo lo de la elipse. Escribir la forma afín de cada objetivo: barra
+$\Delta|V_i| = c_i^\top\varepsilon$; caída $c_i - c_j$; corriente
+$\Delta|I_\ell| = \mathrm{Re}\big(\overline{u_\ell}\,(Y_b E)_\ell\big)\varepsilon$ con $u_\ell = I_{\ell,0}/|I_{\ell,0}|$.
+Subrayar que la dependencia entre barras está en los símbolos compartidos: por eso la caída sale angosta [§28.1].}
+
+\subsection{Exact second-order term}
+\plan{Coordenadas rectangulares: las ecuaciones son cuadráticas; $D = C\varepsilon - J^{-1}q(D)$;
+$\Delta|V_i| = c_i^\top\varepsilon + \varepsilon^\top H_i\varepsilon + O(\delta^3)$, con $H_i$ sin formar: un vector
+adjunto por barra (second\_order.py). Estado de segundo orden $\Delta V_1 + \Delta V_2$,
+$\Delta V_2 = -J^{-1}q(\Delta V_1)$, para las corrientes. Citar \cite{brucoli1985quadratic,sandoval2022second}:
+el modelo no es nuevo; lo nuevo es cómo se usa.}
+
+% =============================================================================================================
+\section{Why moments are not enough}\label{sec:why}
+\plan{Sección corta, motivadora, con una figura. (a) A lo largo de una barra el término cuadrático es chico frente a
+$\sigma$, pero en las colas desplaza la cota; (b) su distribución es asimétrica y de cola pesada (asimetría
+cercana a $\pm2{,}7$, curtosis cercana a 13 en las ramas peores, diagnóstico de B4, sin CSV: generar la figura y su
+CSV); (c) corrección por media y varianza: falla en 15 de 25 celdas de PEGASE [§27.2,
+results/b4\_sweep.csv].}
+\plan{Figura~1: histograma del término cuadrático en una barra o caída típica de PEGASE frente a la normal de igual
+media y varianza; marcar el cuantil 99,865\,\%. Script por hacer: experiments/figures\_paper.py.}
+
+% =============================================================================================================
+\section{Bounds with the range of the second-order term}\label{sec:method}
+
+\subsection{Distribution-free radius of the linear part}
+\plan{Bernstein con soporte y varianza; Hoeffding con solo soporte \cite{hoeffding1963,boucheron2013concentration};
+tope por la caja afín $\sum_k|c_k|$. Explicar por qué no Chebyshev ni desigualdades para unimodales: quedan topadas
+por la caja afín [§28.4, results/b5\_radii.csv].}
+\begin{equation}
+r_\alpha = \frac{ML}{3} + \sqrt{\Big(\frac{ML}{3}\Big)^2 + 2\sigma^2 L}, \qquad L = \ln\frac{2}{\alpha},\quad
+M = \max_k |c_k|,\quad \sigma^2 = \sigma_\varepsilon^2\textstyle\sum_k c_k^2 .
+\end{equation}
+
+\subsection{Sampled range of the second-order term}
+\plan{Bound $[\,-r + \min(0,q_{\min}),\ r + \max(0,q_{\max})\,]$ con $q_{\min},q_{\max}$ extremos de $n$ muestras
+del término cuadrático (sin flujos de potencia). Una sola pasada para todos los objetivos (NonlinearSampler).}
+
+\subsection{A provable coverage level}
+\begin{proposition}\label{prop:cert}
+Under Assumption~\ref{as:sym}, let $Y = L + Q$ be a target of the second-order model, with $L = c^\top\varepsilon$
+and $Q$ its quadratic part. Let $q_{\min}, q_{\max}$ be the extremes of $n$ independent samples of $Q$, drawn
+independently of $\varepsilon$, and let $r$ satisfy $P(|L| > r)\le\alpha_L$. Then
+\[
+P\Big(Y \notin \big[-r + \min(0,q_{\min}),\; r + \max(0,q_{\max})\big]\Big) \;\le\; \alpha_L + \frac{2}{n+1}.
+\]
+\end{proposition}
+\begin{proof}
+If $|L|\le r$, $Q\le q_{\max}$ and $Q\ge q_{\min}$, then $Y\le r + \max(0,q_{\max})$ and
+$Y\ge -r + \min(0,q_{\min})$. Hence the event in the statement is contained in
+$\{|L|>r\}\cup\{Q>q_{\max}\}\cup\{Q<q_{\min}\}$. The new $Q$ and the $n$ samples are exchangeable, so the probability
+that the new one is the strict maximum of the $n+1$ values is at most $1/(n+1)$; the same holds for the minimum.
+The union bound gives the result.
+\end{proof}
+\plan{Corolario: con $\alpha_L = \alpha - 2/(n+1)$ la cota tiene nivel $\alpha$; con $n = 4000$ el ancho sube 2{,}2\,\%
+en mediana [§28.12, results/b11\_certified.csv]. Aclarar que la garantía es para el modelo de segundo orden; el
+tercer orden se mide contra AC.}
+
+\subsection{Algorithm and cost}
+\plan{Pseudocódigo de 6 pasos: (1) punto AC; (2) LU y formas afines; (3) modelo de segundo orden; (4) $n$ muestras
+de los términos no lineales en una pasada; (5) radios; (6) cotas. Tabla de costos [§28.12,
+results/b11\_timing.csv]: 6,7\,s voltajes, 10,2\,s con corrientes en PEGASE-2869.}
+
+% =============================================================================================================
+\section{Case studies}\label{sec:cases}
+
+\subsection{Setup}
+\plan{Sistemas: IEEE-33, IEEE-118, PEGASE-1354, PEGASE-2869 (pandapower y PGLib \cite{pglib2019,thurner2018pandapower}).
+Fuentes: todas las cargas, $P$ y $Q$ separadas. Celdas: 80\,\% a 95\,\% del límite de cargabilidad,
+$\delta$ de 5 a 30\,\%. Validación: 20.000 muestras AC por celda (solver por lotes, tolerancia $10^{-9}$),
+métricas: peor objetivo, objetivos sobre 0,27\,\%, fracción de muestras con algún objetivo fuera, ancho.
+Software y versiones (README.md).}
+
+\subsection{Linearized bounds fail in the tails}
+\plan{Tabla: 3$\sigma$, cumulantes + Cornish-Fisher, estimación por puntos + Cornish-Fisher, Bernstein sin corregir
+y con el rango, en las 3 celdas de los 4 sistemas [§28.8, results/b8\_ppf\_baselines.csv].}
+
+\subsection{Coverage across loading and dispersion}
+\plan{Figura~2: mapa carga × $\delta$ de la peor violación para 3$\sigma$, momentos y rango (PEGASE-2869)
+[§27.2, §28.3, results/b4\_sweep.csv, b5\_sweep.csv]. Tabla con los dos sistemas nuevos [§28.7, b7\_generality.csv].}
+
+\subsection{Branch voltage drops and branch currents}
+\plan{Tabla: caídas (forma afín frente a restar intervalos, 4 a 21 veces) [§28.1, b5\_mc.csv, b5\_width.csv];
+corrientes (error lineal hasta 10,7\,p.u.; sin el rango, hasta 90\,\% de violación; con el rango, 0) [§28.9,
+b9\_branch\_currents.csv]. Figura~3: ancho de la cota de corriente frente a $|I_0|$.}
+
+\subsection{Correlated sources and non-uniform distributions}
+\plan{[§28.6, b6\_correlated.csv]: factores compartidos cubren, la concentración se pierde con un factor común
+fuerte, la cópula mal especificada falla, la slack sola falla con correlación fuerte. [§28.10,
+b10\_marginals.csv]: con media cero y soporte acotado cubren; fuera del soporte, nada.}
+
+\subsection{Certified level and computational cost}
+\plan{[§28.12, b11\_certified.csv, b11\_timing.csv]. Comparar con Monte Carlo AC por lotes (60\,s) y con pandapower
+en lazo (unos 3.800\,s) [C8].}
+
+% =============================================================================================================
+\section{Limits}\label{sec:limits}
+\plan{Lista honesta, con su respaldo:
+(a) no es una garantía determinista: el peor caso de segundo orden no encierra la solución AC en los vértices a
+escala de transmisión [§28.2]; (b) la cobertura simultánea sin supuesto de distribución cuesta lo mismo que el peor
+caso [§28.7]; (c) la ventaja sobre el peor caso depende de cuántas fuentes mueven cada salida (IEEE-118: ninguna)
+[§28.7]; (d) la correlación debe entrar como estructura de factores; con la slack sola y correlación fuerte falla
+la linealización [§28.6]; (e) el soporte acotado es esencial [§28.10]; (f) tercer orden medido, no acotado; (g)
+sin límites de reactivos de los generadores; (h) sin datos reales de carga.}
+
+\section{Conclusions}\label{sec:conclusion}
+\plan{Cuatro frases: qué falla, por qué, qué lo arregla, con qué garantía y a qué costo.}
+
+% =============================================================================================================
+\section*{CRediT authorship contribution statement}
+\nota{Completar (IJEPES lo exige; ver el formato en Basirat et al. 2026).}
+
+\section*{Declaration of competing interest}
+The authors declare that they have no known competing financial interests or personal relationships that could
+have appeared to influence the work reported in this paper.
+
+\section*{Declaration of generative AI and AI-assisted technologies}
+\nota{Elsevier pide declarar el uso de IA generativa en la redacción. Este trabajo usó un asistente de IA para el
+código, los experimentos y borradores; el grupo debe decidir y redactar la declaración según la guía vigente.}
+
+\section*{Data availability}
+\nota{Propuesta: código y resultados en un repositorio público con DOI (por ejemplo Zenodo); los casos de prueba
+son públicos (pandapower, PGLib, MATPOWER).}
+
+\bibliographystyle{elsarticle-num}
+\bibliography{refs}
+\end{document}
