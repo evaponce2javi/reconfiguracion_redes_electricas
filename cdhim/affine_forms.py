@@ -149,17 +149,56 @@ class TargetModel:
         return Xout, f_out, f_lin, n_flip
 
 
+# ----------------------------------------------------------------------------- correlated sources as shared symbols
+class FactorModel:
+    """Correlated sources written with independent bounded symbols (the affine-arithmetic way):
+        eps_k = w * zeta_{z(k)} + (1 - w) * eta_k,     zeta_z, eta_k independent U[-1, 1],
+    so eps_k stays in [-1, 1] and two sources of the same zone have correlation w^2 / (w^2 + (1 - w)^2).
+    ``zone``: zone index of every source (all zeros: one global factor)."""
+
+    def __init__(self, zone, w: float):
+        self.zone = np.asarray(zone, int)
+        self.k = int(self.zone.max()) + 1
+        self.w = float(w)
+        self.Z = sp.csr_matrix((np.ones(self.zone.size), (np.arange(self.zone.size), self.zone)), shape=(self.zone.size, self.k))
+
+    @property
+    def rho(self) -> float:
+        w = self.w
+        return w * w / (w * w + (1 - w) ** 2)
+
+    def coefficients(self, Ct: np.ndarray) -> np.ndarray:
+        """Coefficients of the targets on the independent symbols (zeta_1..zeta_K, eta_1..eta_N)."""
+        return np.hstack([self.w * np.asarray(Ct @ self.Z.toarray()), (1.0 - self.w) * Ct])
+
+    def sample(self, rng, n: int) -> np.ndarray:
+        from .uncertainty import sample_eps
+        zeta = sample_eps(rng, self.k, n)
+        eta = sample_eps(rng, self.zone.size, n)
+        return self.w * zeta[self.zone] + (1.0 - self.w) * eta
+
+    @staticmethod
+    def w_for_rho(rho: float) -> float:
+        """Factor weight giving correlation rho between two sources of the same zone."""
+        if rho <= 0:
+            return 0.0
+        a = np.sqrt(rho / (1.0 - rho)) if rho < 1 else np.inf
+        return float(a / (1.0 + a)) if np.isfinite(a) else 1.0
+
+
 # ----------------------------------------------------------------------------- sampled range of the quadratic part
-def quadratic_ranges(so: SecondOrder, Ws: dict, n: int, seed: int, batch: int = 500):
+def quadratic_ranges(so: SecondOrder, Ws: dict, n: int, seed: int, batch: int = 500, sampler=None):
     """Sampled (min, max) of the quadratic part of every target, for several target sets sharing the samples.
     Double precision is needed: q is a sum of large terms that nearly cancel (single precision errs by
-    about 1e-7 p.u. on PEGASE-2869, the size of the ranges being estimated at many buses)."""
+    about 1e-7 p.u. on PEGASE-2869, the size of the ranges being estimated at many buses).
+    ``sampler(rng, n)`` -> eps (N_u, n): the joint law of the symbols (default: independent U[-1, 1])."""
     from .uncertainty import sample_eps
     rng = np.random.default_rng(seed)
     WT = {k: sp.csr_matrix(W.T) for k, W in Ws.items()}
     out = {k: (np.full(W.shape[1], np.inf), np.full(W.shape[1], -np.inf)) for k, W in Ws.items()}
     for s in range(0, n, batch):
-        q = so.quadratic(sample_eps(rng, so.c_lin.shape[1], min(batch, n - s)))
+        b = min(batch, n - s)
+        q = so.quadratic(sampler(rng, b) if sampler is not None else sample_eps(rng, so.c_lin.shape[1], b))
         for k, Wt in WT.items():
             v = Wt @ q
             np.minimum(out[k][0], v.min(axis=1), out=out[k][0])

@@ -59,3 +59,22 @@ def test_bernstein_radius_covers_and_is_capped():
     s = C @ sample_eps(rng, 400, 200000)
     assert np.all((np.abs(s) > r[:, None]).mean(axis=1) <= alpha)
     assert np.all(r[:5] > 3 * sigma(C)[:5])                       # distribution-free costs width over 3 sigma
+
+
+def test_factor_model_correlation_support_and_rewrite():
+    from cdhim.affine_forms import FactorModel
+    zone = np.r_[0, 0, 0, 1, 1]
+    for rho in (0.155, 0.5, 0.845):
+        fm = FactorModel(zone, FactorModel.w_for_rho(rho))
+        assert fm.rho == pytest.approx(rho)
+        e = fm.sample(np.random.default_rng(0), 200000)
+        assert np.abs(e).max() <= 1.0
+        R = np.corrcoef(e)
+        assert R[0, 1] == pytest.approx(rho, abs=0.01) and R[0, 3] == pytest.approx(0.0, abs=0.01)
+    # the affine forms on the independent symbols give the same values
+    fm = FactorModel(zone, 0.6)
+    rng = np.random.default_rng(1)
+    C = rng.normal(size=(4, 5))
+    z, h = rng.uniform(-1, 1, (2, 7)), rng.uniform(-1, 1, (5, 7))
+    np.testing.assert_allclose(C @ (fm.w * z[zone] + (1 - fm.w) * h), fm.coefficients(C) @ np.vstack([z, h]), atol=1e-14)
+    assert np.all(affine_radius(fm.coefficients(C)) <= affine_radius(C) + 1e-14)
