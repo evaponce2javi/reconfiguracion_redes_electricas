@@ -14,7 +14,7 @@ from pathlib import Path
 from time import perf_counter
 
 HERE = Path(__file__).resolve().parent
-ORDER = ["a_reproduce_paper", "b1_ac_violation", "b2_conservatism", "b3_table1", "c1_ac_sweep", "c2_correlated_sources",
+ORDER = ["a_reproduce_paper", "b1_ac_violation", "b2_conservatism", "b3_table1", "b4_second_order", "b5_affine_forms", "c1_ac_sweep", "c2_correlated_sources",
          "c3_nongaussian", "c4_rho_rule", "c5_system_level", "c6_gamma_transfer", "x1_aa_second_order", "x2_few_sources", "x3_worst_vertex", "x4_reference_checks",
          "x5_liao_baseline", "x6_fixed_point", "x7_block_choices", "x8_feeders",
          "x9_krawczyk", "x10_three_phase", "x12_verified", "x13_scale", "x14_pv",

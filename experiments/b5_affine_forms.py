@@ -19,6 +19,7 @@ the first-order rule and the second-order search, against the deterministic boun
     python experiments/b5_affine_forms.py              # design point of both systems
     python experiments/b5_affine_forms.py sweep        # load x delta sweep of C1 (Monte Carlo only, no vertex search)
     python experiments/b5_affine_forms.py surrogate    # coverage and cost against the number of surrogate samples
+    python experiments/b5_affine_forms.py radii        # Gaussian, Bernstein, Hoeffding, unimodal and Chebyshev radii
 Writes results/b5_mc.csv, results/b5_vertex.csv, results/b5_width.csv (design) or results/b5_sweep.csv
 """
 from time import perf_counter
@@ -338,10 +339,91 @@ def run_surrogate(key):
     return rows
 
 
+# ----------------------------------------------------------------------------- distribution-free radii compared
+N_SUR_RADII = 1000
+
+
+def radii(Ct, alpha):
+    """Half-widths of the linear part at level alpha, all capped by the affine (worst-case) radius."""
+    sg, r_aff = sigma(Ct), affine_radius(Ct)
+    L = np.log(2.0 / alpha)
+    raw = {
+        "gauss_3sigma": 3.0 * sg,                                   # Gaussian, the manuscript's CLTM box (not distribution-free)
+        "gauss_quantile": sg * float(np.sqrt(2.0) * __import__("scipy.special", fromlist=["erfinv"]).erfinv(1.0 - alpha)),
+        "bernstein": bernstein_radius(Ct, alpha),                   # independence + support [-1, 1] + variance
+        "hoeffding": np.sqrt(2.0 * L * (Ct ** 2).sum(axis=1)),      # independence + support only
+        "unimodal_gauss_ineq": sg * np.sqrt(4.0 / (9.0 * alpha)),   # any unimodal distribution with this variance
+        "chebyshev": sg / np.sqrt(alpha),                           # variance only
+        "affine": r_aff,                                            # worst case of the linear model
+    }
+    return {k: np.minimum(v, r_aff) for k, v in raw.items()}
+
+
+def run_radii(key):
+    from cdhim.affine_forms import quadratic_ranges
+    sysc = CFG["systems"][key]
+    delta, n = sysc["delta"], EXP["n_ac"]
+    seed = seed_for("ac_design_point", key)
+    st = study(sysc["case"], threads=worker_threads())
+    res = st.run(delta, method())
+    so = SecondOrder(st, delta)
+    v = res.valid
+    n_pq = st.C1.shape[0]
+    Ws = {"bus": bus_targets(n_pq), "drop": drop_targets(n_pq, res.fi[v], res.ti[v])}
+    rq = quadratic_ranges(so, Ws, N_SUR_RADII, seed + 200)
+    bounds, sig = {}, {}
+    for tg, W in Ws.items():
+        Ct = np.asarray(W.T @ (st.C1 * delta))
+        sig[tg] = sigma(Ct)
+        lo_q, hi_q = rq[tg]
+        for name, r in radii(Ct, ALPHA).items():
+            bounds[(tg, name, "none")] = (-r, r)
+            bounds[(tg, name, "second_order")] = (-r + np.minimum(0.0, lo_q), r + np.maximum(0.0, hi_q))
+    counts = {b: np.zeros(Ws[b[0]].shape[1], np.int64) for b in bounds}
+    anyc = {b: 0 for b in bounds}
+    rng = np.random.default_rng(seed)
+    n_ac = 0
+    WT = {k: W.T.tocsr() for k, W in Ws.items()}
+    for s in range(0, n, CFG["powerflow"]["batch"]):
+        b = min(CFG["powerflow"]["batch"], n - s)
+        eps = sample_eps(rng, st.src.n, b)
+        V, conv, _ = st.solver.solve(st.injections(eps, delta))
+        ac = np.abs(V[st.grid.pq][:, conv]) - st.vm_star[:, None]
+        n_ac += int(conv.sum())
+        tv = {k: WT[k] @ ac for k in Ws}
+        for bk, (lo, hi) in bounds.items():
+            bad = (tv[bk[0]] < lo[:, None] - VIOLATION_ATOL) | (tv[bk[0]] > hi[:, None] + VIOLATION_ATOL)
+            counts[bk] += bad.sum(axis=1)
+            anyc[bk] += int(bad.any(axis=0).sum())
+    rows = []
+    for (tg, name, cor), c in counts.items():
+        lo, hi = bounds[(tg, name, cor)]
+        half = 0.5 * (hi - lo)
+        ok = sig[tg] > 1e-12
+        aff = bounds[(tg, "affine", "none")][1]
+        g3 = bounds[(tg, "gauss_3sigma", "none")][1]
+        rate = c / max(n_ac, 1)
+        rows.append({"system": key, "delta": delta, "seed": seed, "n_ac": n_ac, "n_surrogate": N_SUR_RADII, "target": tg,
+                     "radius": name, "correction": cor,
+                     "halfwidth_over_sigma_median": float(np.median(half[ok] / sig[tg][ok])),
+                     "width_over_3sigma_median": float(np.median(half[ok] / g3[ok])),
+                     "width_over_affine_median": float(np.median(half[ok] / aff[ok])),
+                     "capped_by_affine_pct": pct(np.mean(bounds[(tg, name, "none")][1][ok] >= aff[ok] * (1 - 1e-12))),
+                     "max_pct": pct(rate.max()), "mean_pct": pct(rate.mean()), "n_over_alpha": int((rate > ALPHA).sum()),
+                     "system_level_pct": pct(anyc[(tg, name, cor)] / max(n_ac, 1))})
+    print(f"[b5] radii {key} done", flush=True)
+    return rows
+
+
 def main():
     import sys
     from common import grid
     from cdhim import loadability_limit
+    if "radii" in sys.argv[1:]:
+        rows = [r for o in parallel(run_radii, list(CFG["systems"]), workers=2) for r in o]
+        print(save_table("b5_radii", rows, {"n_samples": EXP["n_ac"], "alpha": ALPHA, "n_surrogate": N_SUR_RADII,
+                                            "note": "every radius capped by the affine radius; second_order adds the sampled range of q"}))
+        return
     if "surrogate" in sys.argv[1:]:
         rows = [r for k in CFG["systems"] for r in run_surrogate(k)]
         print(save_table("b5_surrogate", rows, {"n_samples": EXP["n_ac"], "alpha": ALPHA,

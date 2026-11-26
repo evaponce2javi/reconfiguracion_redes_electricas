@@ -1179,18 +1179,21 @@ def main():
     import report_x12
     import results_text_x8
     import results_text_x12
+    import report_b45
+    import results_text_b45
 
     here = sys.modules[__name__]
-    tables = {**TABLES, **report_x12.tables(here)}
+    tables = {**TABLES, **report_x12.tables(here), **report_b45.tables(here)}
     text = results_text.TEXT.replace("<<C_SECTIONS>>", c_text.strip() + "\n\n" + end.FINAL_TEXT.strip() + "\n\n"
                                      + results_text_x.X_TEXT.strip() + "\n\n" + results_text_x2.X2_TEXT.strip() + "\n\n"
                                      + results_text_x2.X3_TEXT.strip() + "\n\n" + results_text_x4.X4_TEXT.strip() + "\n\n"
-                                     + results_text_x8.X8_TEXT.strip() + "\n\n" + results_text_x12.X12_TEXT.strip() + "\n")
+                                     + results_text_x8.X8_TEXT.strip() + "\n\n" + results_text_x12.X12_TEXT.strip() + "\n\n"
+                                     + results_text_b45.B45_TEXT.strip() + "\n")
     for key, fn in tables.items():
         tag = "{{" + key + "}}"
         if tag in text:
             text = text.replace(tag, fn())
-    for key, value in {**computed_values(), **x1_values(), **x2_values(), **x3_values(), **x4_values(), **x8_values(), **report_x12.values(here)}.items():
+    for key, value in {**computed_values(), **x1_values(), **x2_values(), **x3_values(), **x4_values(), **x8_values(), **report_x12.values(here), **report_b45.values(here)}.items():
         text = text.replace(f"<<{key}>>", value)
     v = meta("b2_conservatism")["versions"]
     text = text.replace("{{versions}}", f"Python {v['python']}, pandapower {v['pandapower']}, NumPy {v['numpy']}, SciPy {v['scipy']} ({v['platform']})")

@@ -2792,3 +2792,343 @@ contraste con un solver externo.
    conjunta es una descomposición en bloques (uᵀε)², como la del teorema k-nomial, acotados junto con el término
    lineal en vez de uno por uno. Usar ahí los bloques de RAA-K en lugar de autovectores no se probó (punto 9.23).
 
+---
+
+## 27. B4 — Corrección de segundo orden de las cotas CD-HIM
+
+**Por qué.** En B1 todo el exceso sobre el 0,27 % nominal viene del error de linealización: las mismas cotas
+probadas contra el modelo lineal no lo superan. El modelo de segundo orden de |V| (sección 17, `SecondOrder`) da
+ese error de forma explícita, d|V_i| = c_iᵀε + εᵀH_iε, sin formar H_i.
+
+**Qué se agrega** (`cdhim/correction.py`). Con símbolos independientes, de media cero y simétricos, la parte
+lineal y la cuadrática no están correlacionadas, así que:
+
+- **media:** E[q_i] = Var(ε)·tr(H_i), exacta y barata;
+- **varianza y covarianza de rama** de q, por muestreo del término cuadrático solo (sin flujo de potencia);
+- **rango de q**, por el mismo muestreo; para una elipse, proyectado sobre sus ejes principales, y la elipse se
+  reemplaza por una elipse exterior de la suma de Minkowski de la elipse y ese rango;
+- **para la caja afín determinista:** q evaluado en los dos vértices donde la parte lineal es extrema.
+
+La columna "sustituto de 2.º orden" prueba las mismas cotas contra cᵀε + q(ε) en vez de AC: mide lo que dejan
+fuera el tercer orden y los superiores.
+
+### 27.1 Punto de diseño (mismas muestras AC que B1)
+
+| Sistema | Cota | Por | Violación máx. contra AC (%) | Sobre 0,27 % | Máx. contra el modelo lineal (%) | Máx. contra el sustituto de 2.º orden (%) | Ancho (área) / sin corregir, mediana | máximo |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | Intervalo CD-HIM (λ_max), sin corregir | barra | 0,020 | 0 | 0,020 | 0,020 | 1,000 | 1,00 |
+| IEEE-33 |   + media y varianza de q | barra | 0,020 | 0 | 0,020 | 0,020 | 1,000 | 1,01 |
+| IEEE-33 |   + rango de q (Caja: q en el vértice) | barra | 0,020 | 0 | 0,020 | 0,020 | 1,003 | 1,01 |
+| IEEE-33 | Intervalo CD-HIM (proyección exacta), sin corregir | barra | 0,050 | 0 | 0,050 | 0,050 | 1,000 | 1,00 |
+| IEEE-33 |   + rango de q | barra | 0,050 | 0 | 0,050 | 0,050 | 1,003 | 1,01 |
+| IEEE-33 | Caja 3σ, sin corregir | barra | 0,275 | 1 | 0,275 | 0,275 | 1,000 | 1,00 |
+| IEEE-33 |   + rango de q | barra | 0,270 | 0 | 0,275 | 0,270 | 1,004 | 1,00 |
+| IEEE-33 | Caja afín, sin corregir | barra | 0,000 | 0 | 0,000 | 0,000 | 1,000 | 1,00 |
+| IEEE-33 |   + cota rigurosa de q (término a término) | barra | 0,000 | 0 | 0,000 | 0,000 | 1,021 | 1,02 |
+| IEEE-33 |   + q en el vértice extremo | barra | 0,000 | 0 | 0,000 | 0,000 | 1,007 | 1,01 |
+| IEEE-33 | Elipse, sin corregir | rama | 0,165 | 0 | 0,165 | 0,165 | 1,000 | 1,00 |
+| IEEE-33 |   + media de q | rama | 0,165 | 0 | 0,165 | 0,165 | 1,000 | 1,00 |
+| IEEE-33 |   + media y covarianza de q | rama | 0,165 | 0 | 0,165 | 0,165 | 1,000 | 1,00 |
+| IEEE-33 |   + rango de q en los ejes principales | rama | 0,160 | 0 | 0,165 | 0,160 | 1,008 | 1,01 |
+| PEGASE-2869 | Intervalo CD-HIM (λ_max), sin corregir | barra | 0,410 | 1 | 0,065 | 0,410 | 1,000 | 1,00 |
+| PEGASE-2869 |   + media y varianza de q | barra | 0,090 | 0 | 0,065 | 0,090 | 1,000 | 3,79 |
+| PEGASE-2869 |   + rango de q (Caja: q en el vértice) | barra | 0,050 | 0 | 0,055 | 0,050 | 1,008 | 3,79 |
+| PEGASE-2869 | Intervalo CD-HIM (proyección exacta), sin corregir | barra | 0,630 | 2 | 0,085 | 0,630 | 1,000 | 1,00 |
+| PEGASE-2869 |   + rango de q | barra | 0,080 | 0 | 0,080 | 0,080 | 1,010 | 3,79 |
+| PEGASE-2869 | Caja 3σ, sin corregir | barra | 1,190 | 80 | 0,315 | 1,205 | 1,000 | 1,00 |
+| PEGASE-2869 |   + rango de q | barra | 0,290 | 3 | 0,290 | 0,290 | 1,009 | 1,45 |
+| PEGASE-2869 | Caja afín, sin corregir | barra | 0,410 | 1 | 0,000 | 0,410 | 1,000 | 1,00 |
+| PEGASE-2869 |   + cota rigurosa de q (término a término) | barra | 0,000 | 0 | 0,000 | 0,000 | 172,934 | 2332451,91 |
+| PEGASE-2869 |   + q en el vértice extremo | barra | 0,000 | 0 | 0,000 | 0,000 | 1,044 | 3,79 |
+| PEGASE-2869 | Elipse, sin corregir | rama | 2,685 | 22 | 0,270 | 2,700 | 1,000 | 1,00 |
+| PEGASE-2869 |   + media de q | rama | 1,635 | 16 | 0,275 | 1,625 | 1,000 | 1,00 |
+| PEGASE-2869 |   + media y covarianza de q | rama | 1,080 | 13 | 0,275 | 1,085 | 1,000 | 1,18 |
+| PEGASE-2869 |   + rango de q en los ejes principales | rama | 0,235 | 0 | 0,235 | 0,235 | 1,024 | 3,07 |
+
+*Script: `experiments/b4_second_order.py` · CSV: `results/b4_design_bus.csv`, `results/b4_design_branch.csv` ·
+4.000 muestras del término cuadrático (semilla de B1 + 1)*
+
+- **El intervalo CD-HIM por barra queda resuelto:** en PEGASE la peor barra pasa de 0,41 % a
+  0,05 %, con un ancho 0,8 % mayor en mediana.
+- **La elipse necesita el rango, no los momentos.** Con media y covarianza de q la peor elipse baja de
+  2,69 % (22 ramas sobre 0,27 %) a 1,08 % (13 ramas). A lo largo del eje menor de
+  las elipses delgadas el término cuadrático es casi de un solo signo y de cola pesada (asimetría cercana a ±2,7 y
+  curtosis cercana a 13 en las ramas peores; diagnóstico en esta sesión, sin CSV), lo que un ajuste de dos momentos no representa. Con el rango
+  proyectado la peor elipse queda en 0,235 %, con un área 2,4 % mayor en mediana y hasta
+  3,1 veces en la peor rama.
+- **El tercer orden no pesa en el punto de diseño:** el sustituto de segundo orden reproduce las violaciones AC.
+- **La cota rigurosa de q término a término no sirve:** es válida para el modelo de segundo orden pero multiplica
+  el ancho de la caja afín por más de cien en mediana en PEGASE.
+
+### 27.2 Barrido carga × δ (las 50 celdas de C1, mismas muestras)
+
+| Sistema | Cota | Celdas | Celdas con alguna barra o rama sobre 0,27 % | Máx. barras o ramas sobre 0,27 % en una celda | Peor violación (%) | Ancho / sin corregir, mediana de las celdas | máximo |
+|---|---|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | Intervalo CD-HIM, sin corregir | 25 | 1 | 1 | 0,471 | 1,000 | 1,000 |
+| IEEE-33 |   + media y varianza de q | 25 | 1 | 1 | 0,386 | 1,000 | 1,030 |
+| IEEE-33 |   + rango de q | 25 | 0 | 0 | 0,040 | 1,004 | 1,285 |
+| IEEE-33 | Caja 3σ, sin corregir | 25 | 4 | 31 | 1,314 | 1,000 | 1,000 |
+| IEEE-33 |   + media y varianza de q | 25 | 3 | 31 | 1,048 | 1,000 | 1,028 |
+| IEEE-33 | Caja afín, sin corregir | 25 | 0 | 0 | 0,000 | 1,000 | 1,000 |
+| IEEE-33 |   + q en el vértice extremo | 25 | 0 | 0 | 0,000 | 1,009 | 1,675 |
+| IEEE-33 | Elipse, sin corregir | 25 | 4 | 15 | 1,088 | – | – |
+| IEEE-33 |   + media y covarianza de q | 25 | 3 | 15 | 0,933 | – | – |
+| IEEE-33 |   + rango de q en los ejes principales | 25 | 0 | 0 | 0,130 | – | – |
+| PEGASE-2869 | Intervalo CD-HIM, sin corregir | 25 | 24 | 88 | 5,153 | 1,000 | 1,000 |
+| PEGASE-2869 |   + media y varianza de q | 25 | 15 | 43 | 1,102 | 1,000 | 1,005 |
+| PEGASE-2869 |   + rango de q | 25 | 0 | 0 | 0,110 | 1,028 | 1,097 |
+| PEGASE-2869 | Caja 3σ, sin corregir | 25 | 25 | 1246 | 23,838 | 1,000 | 1,000 |
+| PEGASE-2869 |   + media y varianza de q | 25 | 25 | 922 | 2,420 | 1,000 | 1,003 |
+| PEGASE-2869 | Caja afín, sin corregir | 25 | 24 | 3 | 5,153 | 1,000 | 1,000 |
+| PEGASE-2869 |   + q en el vértice extremo | 25 | 0 | 0 | 0,006 | 1,148 | 1,420 |
+| PEGASE-2869 | Elipse, sin corregir | 25 | 25 | 1219 | 32,325 | – | – |
+| PEGASE-2869 |   + media y covarianza de q | 25 | 25 | 837 | 2,850 | – | – |
+| PEGASE-2869 |   + rango de q en los ejes principales | 25 | 0 | 0 | 0,260 | – | – |
+
+*Script: `experiments/b4_second_order.py` · CSV: `results/b4_sweep.csv`. El ancho de la elipse no está en el
+barrido.*
+
+- Con el rango de q, ninguna de las 50 celdas tiene una barra o una elipse sobre el nominal. Con solo
+  media y varianza siguen fallando 15 de las 25 celdas de PEGASE.
+- La caja 3σ corregida sigue fallando: lo que falla ahí es la normalidad, no la linealización.
+- "Sobre 0,27 %" compara una frecuencia estimada con 20.000 muestras con el nivel nominal: una cota exacta al
+  nivel nominal supera el umbral por azar en una parte de los objetivos. La elipse corregida queda bajo el umbral
+  porque es algo más ancha.
+
+### 27.3 Costo
+
+| Sistema | Método lineal (s) | Modelo de 2.º orden (s) | Media exacta de q (s) | q en los vértices de las barras Caja (s) | 1.000 muestras de q (s) | 4.000 muestras de q (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | 0,002 | 0,006 | 0,000 | 0,000 | 0,009 | 0,005 |
+| PEGASE-2869 | 1,161 | 3,910 | 0,275 | 1,236 | 1,069 | 3,568 |
+
+*Script: `experiments/b4_second_order.py` (modo `timing`) · CSV: `results/b4_timing.csv` · un proceso*
+
+En PEGASE la corrección completa suma 9,0 s a los 1,2 s del método lineal. La sección 28.5 muestra
+que bastan muchas menos muestras.
+
+---
+
+## 28. B5 — Salidas desde las formas afines, sin elipse
+
+**Por qué.** Las formas afines ΔV_i = c_iᵀε conservan la dependencia entre barras a través de los símbolos
+compartidos. Cualquier combinación lineal, por ejemplo la caída |V_i| − |V_j| de una rama, tiene su propia forma
+afín y su propio modelo de segundo orden (`cdhim/affine_forms.py`, sin formar H). La elipse, G y γ_th dejan de
+ser necesarios.
+
+**Radios.** Para la parte lineal: la caja afín Σ|c_k| (peor caso), 3σ (supone normalidad) y el radio de
+Bernstein para una suma de términos independientes, acotados y de media cero, r = ML/3 + √((ML/3)² + 2σ²L) con
+L = ln(2/α), M = max|c_k|, topado por la caja afín. A todos se les suma el rango de q como en B4.
+
+**Peor caso.** Además del vértice de primer orden, se busca el vértice extremo del modelo de segundo orden por
+volteos de signo guiados por la ganancia exacta de cada volteo. En una prueba con 16 zonas en PEGASE, frente a la
+enumeración de los 65.536 vértices del modelo, la búsqueda da el extremo exacto en 86 % (máximo) y 97 % (mínimo)
+de las barras, contra 58 % y 78 % del vértice de primer orden (medición en esta sesión, sin CSV; la prueba
+unitaria `tests/test_affine_forms.py` lo exige exacto en IEEE-33 con 8 zonas). No es una cota: entrega un punto
+alcanzado.
+
+### 28.1 Punto de diseño, Monte Carlo AC (mismas muestras que B1)
+
+| Sistema | Objetivo | Cota | Violación máx. contra AC (%) | Sobre 0,27 % | Muestras con alguna fuera (%) | Máx. contra el modelo lineal (%) | Ancho / caja afín, mediana | Ancho / 3σ, mediana | Ancho mediano (p.u.) |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | barra | Caja afín (peor caso, 1.er orden) | 0,000 | 0 | 0,00 | 0,000 | 1,00 | 2,92 | 0,02005 |
+| IEEE-33 | barra |   + q en el vértice extremo | 0,000 | 0 | 0,00 | 0,000 | 1,01 | 2,94 | 0,02018 |
+| IEEE-33 | barra |   + extremo del 2.º orden hallado por búsqueda | 0,000 | 0 | 0,00 | 0,000 | 1,01 | 2,94 | 0,02018 |
+| IEEE-33 | barra | Bernstein + rango de q | 0,000 | 0 | 0,00 | 0,000 | 0,70 | 1,97 | 0,01375 |
+| IEEE-33 | barra | 3σ + rango de q (supone normalidad) | 0,270 | 0 | 0,70 | 0,275 | 0,34 | 1,00 | 0,00659 |
+| IEEE-33 | barra | Intervalo CD-HIM + rango de q (B4) | 0,020 | 0 | 0,02 | 0,020 | 0,56 | 1,56 | 0,01030 |
+| IEEE-33 | caída | Forma afín de la caída, peor caso | 0,000 | 0 | 0,00 | 0,000 | 1,00 | 1,49 | 0,00108 |
+| IEEE-33 | caída |   + q en el vértice extremo | 0,000 | 0 | 0,00 | 0,000 | 1,01 | 1,51 | 0,00108 |
+| IEEE-33 | caída |   + extremo hallado por búsqueda | 0,000 | 0 | 0,00 | 0,000 | 1,01 | 1,51 | 0,00108 |
+| IEEE-33 | caída | Forma afín de la caída, Bernstein + rango de q | 0,000 | 0 | 0,00 | 0,000 | 1,00 | 1,50 | 0,00103 |
+| IEEE-33 | caída | Forma afín de la caída, 3σ + rango de q | 0,195 | 0 | 1,31 | 0,195 | 0,67 | 1,00 | 0,00078 |
+| IEEE-33 | caída | Resta de las cajas afines corregidas de las dos barras | 0,000 | 0 | 0,00 | 0,000 | 24,73 | 46,80 | 0,03957 |
+| IEEE-33 | caída | Resta de los intervalos Bernstein de las dos barras | 0,000 | 0 | 0,00 | 0,000 | 20,96 | 31,05 | 0,02696 |
+| IEEE-33 | caída | Resta de los intervalos CD-HIM corregidos | 0,000 | 0 | 0,00 | 0,000 | 13,97 | 24,48 | 0,02047 |
+| PEGASE-2869 | barra | Caja afín (peor caso, 1.er orden) | 0,410 | 1 | 0,42 | 0,000 | 1,00 | 3,82 | 0,00478 |
+| PEGASE-2869 | barra |   + q en el vértice extremo | 0,000 | 0 | 0,00 | 0,000 | 1,04 | 4,10 | 0,00527 |
+| PEGASE-2869 | barra |   + extremo del 2.º orden hallado por búsqueda | 0,000 | 0 | 0,00 | 0,000 | 1,05 | 4,12 | 0,00528 |
+| PEGASE-2869 | barra | Bernstein + rango de q | 0,005 | 0 | 0,01 | 0,005 | 0,54 | 1,95 | 0,00232 |
+| PEGASE-2869 | barra | 3σ + rango de q (supone normalidad) | 0,290 | 3 | 35,55 | 0,290 | 0,26 | 1,00 | 0,00120 |
+| PEGASE-2869 | barra | Intervalo CD-HIM + rango de q (B4) | 0,050 | 0 | 1,93 | 0,055 | 0,48 | 1,51 | 0,00207 |
+| PEGASE-2869 | caída | Forma afín de la caída, peor caso | 0,000 | 0 | 0,00 | 0,000 | 1,00 | 2,74 | 0,00117 |
+| PEGASE-2869 | caída |   + q en el vértice extremo | 0,000 | 0 | 0,00 | 0,000 | 1,02 | 2,87 | 0,00124 |
+| PEGASE-2869 | caída |   + extremo hallado por búsqueda | 0,000 | 0 | 0,00 | 0,000 | 1,02 | 2,89 | 0,00124 |
+| PEGASE-2869 | caída | Forma afín de la caída, Bernstein + rango de q | 0,000 | 0 | 0,00 | 0,000 | 0,80 | 1,88 | 0,00071 |
+| PEGASE-2869 | caída | Forma afín de la caída, 3σ + rango de q | 0,275 | 1 | 66,05 | 0,275 | 0,36 | 1,00 | 0,00041 |
+| PEGASE-2869 | caída | Resta de las cajas afines corregidas de las dos barras | 0,000 | 0 | 0,00 | 0,000 | 8,70 | 27,38 | 0,01367 |
+| PEGASE-2869 | caída | Resta de los intervalos Bernstein de las dos barras | 0,000 | 0 | 0,00 | 0,000 | 4,30 | 11,17 | 0,00611 |
+| PEGASE-2869 | caída | Resta de los intervalos CD-HIM corregidos | 0,010 | 0 | 0,04 | 0,030 | 3,19 | 8,20 | 0,00465 |
+
+*Script: `experiments/b5_affine_forms.py` · CSV: `results/b5_mc.csv`, `results/b5_width.csv`*
+
+- **Barras.** Bernstein con el rango de q tiene su peor barra en 0,005 % en PEGASE, con un ancho de
+  0,54 veces la caja afín y 1,95 veces 3σ en mediana. El intervalo CD-HIM corregido mide
+  0,81 veces el de Bernstein en mediana, sin una justificación de cobertura propia.
+- **Caídas por rama.** La forma afín de la caída con Bernstein no supera el nominal (peor rama 0,000 %).
+  Restar los intervalos de las dos barras da caídas 4,6 veces más anchas en mediana con CD-HIM,
+  6,2 con Bernstein y 15,6 con las cajas afines (PEGASE; en IEEE-33, 14,0 veces con
+  CD-HIM).
+
+### 28.2 El peor caso en los vértices: la caja de segundo orden no encierra la solución AC
+
+| Sistema | Objetivo | Vértice | Objetivos | AC sin converger | Fuera de la caja afín | Fuera de la caja + q en el vértice | Fuera de la caja + búsqueda | Exceso máx. sobre esta última (p.u.) | Exceso máx. / ancho |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | barra | 1.er orden, máximo | 32 | 0 | 0 | 0 | 0 | 0,000000 | 0,000 |
+| IEEE-33 | barra | 1.er orden, mínimo | 32 | 0 | 32 | 32 | 32 | 0,000006 | 0,000 |
+| IEEE-33 | barra | búsqueda de 2.º orden, máximo | 32 | 0 | 0 | 0 | 0 | 0,000000 | 0,000 |
+| IEEE-33 | barra | búsqueda de 2.º orden, mínimo | 32 | 0 | 32 | 32 | 32 | 0,000006 | 0,000 |
+| IEEE-33 | caída | 1.er orden, máximo | 31 | 0 | 31 | 27 | 27 | 0,000001 | 0,000 |
+| IEEE-33 | caída | 1.er orden, mínimo | 31 | 0 | 0 | 0 | 0 | 0,000000 | 0,000 |
+| IEEE-33 | caída | búsqueda de 2.º orden, máximo | 31 | 0 | 31 | 27 | 27 | 0,000001 | 0,000 |
+| IEEE-33 | caída | búsqueda de 2.º orden, mínimo | 31 | 0 | 0 | 0 | 0 | 0,000000 | 0,000 |
+| PEGASE-2869 | barra | 1.er orden, máximo | 2359 | 0 | 3 | 3 | 3 | 0,000003 | 0,006 |
+| PEGASE-2869 | barra | 1.er orden, mínimo | 2359 | 0 | 2271 | 1920 | 1456 | 0,005151 | 0,444 |
+| PEGASE-2869 | barra | búsqueda de 2.º orden, máximo | 2359 | 0 | 3 | 3 | 3 | 0,000003 | 0,006 |
+| PEGASE-2869 | barra | búsqueda de 2.º orden, mínimo | 2359 | 0 | 2271 | 2065 | 1921 | 0,005155 | 0,633 |
+| PEGASE-2869 | caída | 1.er orden, máximo | 3216 | 0 | 1485 | 1210 | 880 | 0,002721 | 0,112 |
+| PEGASE-2869 | caída | 1.er orden, mínimo | 3216 | 0 | 1573 | 1269 | 941 | 0,001993 | 0,084 |
+| PEGASE-2869 | caída | búsqueda de 2.º orden, máximo | 3216 | 0 | 1509 | 1337 | 1228 | 0,002726 | 0,112 |
+| PEGASE-2869 | caída | búsqueda de 2.º orden, mínimo | 3216 | 0 | 1601 | 1390 | 1280 | 0,001999 | 0,132 |
+
+*Script: `experiments/b5_affine_forms.py` · CSV: `results/b5_vertex.csv` · flujo AC exacto en el vértice propuesto
+para cada barra o rama*
+
+- **PEGASE-2869:** con todas las fuentes en un extremo, hasta 1921 de 2359 barras y 1280 de
+  3216 caídas quedan fuera incluso de la cota que toma el extremo de segundo orden hallado por búsqueda; el
+  exceso llega a 0,0052 p.u., el 63 % del ancho de la cota. Pesan los órdenes superiores al segundo.
+- **IEEE-33:** también quedan fuera, por 5,9·10⁻⁶ p.u. como máximo (el tercer orden de la sección 18).
+- El Monte Carlo no lo detecta: las muestras no llegan a los vértices.
+- **Consecuencia:** sin una cota rigurosa del resto, que la sección 22 mostró que no escala a transmisión, no se
+  puede afirmar una cota determinista a esta escala. La caja afín queda como referencia del peor caso del modelo
+  lineal, no como garantía.
+
+### 28.3 Barrido carga × δ (las 50 celdas de C1, mismas muestras)
+
+| Sistema | Cota | Celdas | Celdas con alguna barra o rama sobre 0,27 % | Máx. barras o ramas sobre 0,27 % en una celda | Peor violación (%) | Ancho / caja afín, mediana de las celdas | máximo |
+|---|---|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | Barra: caja afín | 25 | 0 | 0 | 0,000 | 1,000 | 1,000 |
+| IEEE-33 | Barra: caja afín + q en el vértice | 25 | 0 | 0 | 0,000 | 1,009 | 1,675 |
+| IEEE-33 | Barra: Bernstein + rango de q | 25 | 0 | 0 | 0,000 | 0,701 | 0,927 |
+| IEEE-33 | Barra: 3σ + rango de q | 25 | 0 | 0 | 0,225 | 0,342 | 0,506 |
+| IEEE-33 | Barra: CD-HIM + rango de q | 25 | 0 | 0 | 0,040 | 0,563 | 0,732 |
+| IEEE-33 | Caída: forma afín, peor caso + q en el vértice | 25 | 0 | 0 | 0,000 | 1,010 | 1,724 |
+| IEEE-33 | Caída: forma afín, Bernstein + rango de q | 25 | 0 | 0 | 0,010 | 1,002 | 1,005 |
+| IEEE-33 | Caída: forma afín, 3σ + rango de q | 25 | 1 | 2 | 0,276 | 0,659 | 0,681 |
+| IEEE-33 | Caída: resta de intervalos Bernstein | 25 | 0 | 0 | 0,000 | 21,073 | 27,437 |
+| IEEE-33 | Caída: resta de intervalos CD-HIM | 25 | 0 | 0 | 0,000 | 14,003 | 21,096 |
+| PEGASE-2869 | Barra: caja afín | 25 | 24 | 3 | 5,153 | 1,000 | 1,000 |
+| PEGASE-2869 | Barra: caja afín + q en el vértice | 25 | 0 | 0 | 0,006 | 1,148 | 1,420 |
+| PEGASE-2869 | Barra: Bernstein + rango de q | 25 | 0 | 0 | 0,018 | 0,517 | 0,586 |
+| PEGASE-2869 | Barra: 3σ + rango de q | 25 | 7 | 18 | 0,341 | 0,263 | 0,285 |
+| PEGASE-2869 | Barra: CD-HIM + rango de q | 25 | 0 | 0 | 0,125 | 0,473 | 0,504 |
+| PEGASE-2869 | Caída: forma afín, peor caso + q en el vértice | 25 | 0 | 0 | 0,000 | 1,062 | 1,258 |
+| PEGASE-2869 | Caída: forma afín, Bernstein + rango de q | 25 | 0 | 0 | 0,060 | 0,767 | 0,855 |
+| PEGASE-2869 | Caída: forma afín, 3σ + rango de q | 25 | 8 | 10 | 0,310 | 0,359 | 0,388 |
+| PEGASE-2869 | Caída: resta de intervalos Bernstein | 25 | 0 | 0 | 0,000 | 4,486 | 4,935 |
+| PEGASE-2869 | Caída: resta de intervalos CD-HIM | 25 | 0 | 0 | 0,030 | 3,382 | 3,813 |
+
+*Script: `experiments/b5_affine_forms.py` (modo `sweep`) · CSV: `results/b5_sweep.csv` · sin búsqueda de vértices*
+
+En las 50 celdas, Bernstein con el rango de q no supera el nominal en ninguna barra (peor
+0,018 %) ni en ninguna caída (peor 0,060 %). La versión 3σ corregida falla en 7
+celdas.
+
+### 28.4 Qué radio: lo que aporta suponer cada cosa
+
+| Sistema | Objetivo | Radio (qué supone) | Semiancho / σ, mediana | Ancho / caja afín, mediana | Topado por la caja afín (% de objetivos) | Violación máx. AC sin corregir (%) | sobre 0,27 % | con el rango de q (%) | sobre 0,27 % |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | barra | 3σ (normal) | 3,01 | 0,34 | 0 | 0,275 | 1 | 0,270 | 0 |
+| IEEE-33 | barra | Bernstein (soporte y varianza) | 5,92 | 0,70 | 28 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | barra | Hoeffding (soporte) | 6,31 | 0,72 | 12 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | barra | Gauss, unimodal (varianza) | 8,82 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | barra | Chebyshev (varianza) | 8,82 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | barra | Caja afín (peor caso) | 8,82 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | caída | 3σ (normal) | 3,01 | 0,67 | 13 | 0,195 | 0 | 0,195 | 0 |
+| IEEE-33 | caída | Bernstein (soporte y varianza) | 4,51 | 1,00 | 77 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | caída | Hoeffding (soporte) | 4,51 | 1,00 | 77 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | caída | Gauss, unimodal (varianza) | 4,51 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | caída | Chebyshev (varianza) | 4,51 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| IEEE-33 | caída | Caja afín (peor caso) | 4,51 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+| PEGASE-2869 | barra | 3σ (normal) | 3,02 | 0,26 | 4 | 1,190 | 81 | 0,295 | 4 |
+| PEGASE-2869 | barra | Bernstein (soporte y varianza) | 5,90 | 0,54 | 20 | 0,410 | 1 | 0,005 | 0 |
+| PEGASE-2869 | barra | Hoeffding (soporte) | 6,32 | 0,55 | 16 | 0,410 | 1 | 0,000 | 0 |
+| PEGASE-2869 | barra | Gauss, unimodal (varianza) | 11,65 | 1,00 | 58 | 0,410 | 1 | 0,000 | 0 |
+| PEGASE-2869 | barra | Chebyshev (varianza) | 11,65 | 1,00 | 85 | 0,410 | 1 | 0,000 | 0 |
+| PEGASE-2869 | barra | Caja afín (peor caso) | 11,65 | 1,00 | 100 | 0,410 | 1 | 0,000 | 0 |
+| PEGASE-2869 | caída | 3σ (normal) | 3,01 | 0,36 | 14 | 0,380 | 69 | 0,275 | 1 |
+| PEGASE-2869 | caída | Bernstein (soporte y varianza) | 5,70 | 0,80 | 40 | 0,005 | 0 | 0,000 | 0 |
+| PEGASE-2869 | caída | Hoeffding (soporte) | 6,31 | 0,76 | 36 | 0,000 | 0 | 0,000 | 0 |
+| PEGASE-2869 | caída | Gauss, unimodal (varianza) | 8,32 | 1,00 | 73 | 0,000 | 0 | 0,000 | 0 |
+| PEGASE-2869 | caída | Chebyshev (varianza) | 8,32 | 1,00 | 88 | 0,000 | 0 | 0,000 | 0 |
+| PEGASE-2869 | caída | Caja afín (peor caso) | 8,32 | 1,00 | 100 | 0,000 | 0 | 0,000 | 0 |
+
+*Script: `experiments/b5_affine_forms.py` (modo `radii`) · CSV: `results/b5_radii.csv` · 1.000 muestras de q*
+
+- **Los radios que usan solo la varianza no sirven:** Chebyshev pide 11,7σ en PEGASE y queda topado por la
+  caja afín en el 85 % de las barras; la desigualdad de Gauss para distribuciones unimodales, en el
+  58 %. Equivalen al peor caso.
+- **Los que usan el soporte acotado sí:** Hoeffding (6,3σ) y Bernstein (5,9σ) quedan en la mitad de la
+  caja afín. La varianza que agrega Bernstein gana solo 7 % sobre Hoeffding.
+- Todos necesitan la corrección de segundo orden en las barras con una sola fuente dominante, donde el radio queda
+  topado por la caja afín y el error de linealización lo cruza.
+
+### 28.5 Cuántas muestras del término cuadrático hacen falta, y el costo del método
+
+| Sistema | Objetivo | Muestras de q | Peor violación, 3 semillas (%) | Sobre 0,27 %, peor semilla | Ancho / sin corregir, mediana | Tiempo del muestreo (s) |
+|---|---|---|---:|---:|---:|---:|
+| IEEE-33 | barra | 0 (sin corregir) | 0,000 | 0 | 1,0000 | 0,00 |
+| IEEE-33 | barra | 250 | 0,000 | 0 | 1,0014 | 0,00 |
+| IEEE-33 | barra | 500 | 0,000 | 0 | 1,0014 | 0,00 |
+| IEEE-33 | barra | 1000 | 0,000 | 0 | 1,0014 | 0,00 |
+| IEEE-33 | barra | 2000 | 0,000 | 0 | 1,0016 | 0,00 |
+| IEEE-33 | barra | 4000 | 0,000 | 0 | 1,0019 | 0,01 |
+| IEEE-33 | caída | 0 (sin corregir) | 0,000 | 0 | 1,0000 | 0,00 |
+| IEEE-33 | caída | 250 | 0,000 | 0 | 1,0013 | 0,00 |
+| IEEE-33 | caída | 500 | 0,000 | 0 | 1,0015 | 0,00 |
+| IEEE-33 | caída | 1000 | 0,000 | 0 | 1,0015 | 0,00 |
+| IEEE-33 | caída | 2000 | 0,000 | 0 | 1,0018 | 0,00 |
+| IEEE-33 | caída | 4000 | 0,000 | 0 | 1,0020 | 0,01 |
+| PEGASE-2869 | barra | 0 (sin corregir) | 0,410 | 1 | 1,0000 | 0,00 |
+| PEGASE-2869 | barra | 250 | 0,010 | 0 | 1,0032 | 0,26 |
+| PEGASE-2869 | barra | 500 | 0,010 | 0 | 1,0036 | 0,40 |
+| PEGASE-2869 | barra | 1000 | 0,010 | 0 | 1,0038 | 0,87 |
+| PEGASE-2869 | barra | 2000 | 0,005 | 0 | 1,0040 | 1,96 |
+| PEGASE-2869 | barra | 4000 | 0,005 | 0 | 1,0044 | 3,76 |
+| PEGASE-2869 | caída | 0 (sin corregir) | 0,005 | 0 | 1,0000 | 0,00 |
+| PEGASE-2869 | caída | 250 | 0,005 | 0 | 1,0020 | 0,26 |
+| PEGASE-2869 | caída | 500 | 0,005 | 0 | 1,0022 | 0,40 |
+| PEGASE-2869 | caída | 1000 | 0,005 | 0 | 1,0023 | 0,87 |
+| PEGASE-2869 | caída | 2000 | 0,000 | 0 | 1,0025 | 1,96 |
+| PEGASE-2869 | caída | 4000 | 0,000 | 0 | 1,0027 | 3,76 |
+
+*Script: `experiments/b5_affine_forms.py` (modo `surrogate`) · CSV: `results/b5_surrogate.csv` · tres semillas por
+tamaño · un proceso*
+
+Con 250 muestras la cobertura no cambia: el margen del radio absorbe el error de estimar la cola del rango. El
+método completo en PEGASE (estudio lineal, modelo de segundo orden y 250 muestras) toma 4,1 s, unas
+15 veces menos que el Monte Carlo AC por lotes de C8 (60 s). El barrido 28.3 usó 4.000 muestras;
+las 250 están probadas solo en el punto de diseño. El muestreo necesita doble precisión: q es una suma de términos
+grandes que casi se cancelan.
+
+---
+
+## 29. Lista de afirmaciones para el paper de formas afines
+
+Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (CHECKLIST_AA.md, 6.1).
+
+| # | Afirmación | Respaldo | Límite que hay que declarar |
+|---|---|---|---|
+| 1 | Las formas afines de |V| se obtienen de una factorización LU dispersa en el punto AC y escalan a 9.241 barras | C7, `results/c7_timing.csv` | El bloque de sensibilidades es denso: el método completo escala como N^1,5, no N^1,2 |
+| 2 | El error de linealización es lo único que separa las cotas del 0,27 % nominal en el punto de diseño | B1 y 27.1 (columnas lineal y AC) | En la peor barra de PEGASE |
+| 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda), en dos sistemas; el rango es muestreado, no acotado |
+| 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
+| 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1]; con fuentes correlacionadas (C2) hay que cambiarlo |
+| 6 | 3σ, la reformulación gaussiana habitual, no cubre aun corregida | 27.2, 28.3 | Cobertura por objetivo, no simultánea (C5) |
+| 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
+| 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
+
+Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, fuentes correlacionadas, datos
+reales de carga y generación, sistemas distintos de los dos del manuscrito para la corrección, y una revisión
+bibliográfica en bases indexadas (RELATED_WORK.md, quinta pasada).
+
