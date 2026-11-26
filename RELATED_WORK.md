@@ -528,3 +528,32 @@ bajarlos a mano.
 Consultas sugeridas: ("second-order" OR quadratic) AND ("probabilistic power flow" OR "probabilistic load flow")
 AND (quantile OR tail OR "confidence interval"); y "linearization error" AND "chance constraint" AND voltage AND
 (quadratic OR Hessian).
+
+### Lectura completa de los cinco más cercanos (PDF entregados por los autores, 26-11-2026)
+
+| Trabajo | Modelo | Qué propaga | Entradas | Cómo valida | Sistemas |
+|---|---|---|---|---|---|
+| Brucoli, Torelli, Napoli (1985), IJEPES | Segundo orden del flujo **y de las corrientes de línea**, con despacho lineal | Medias y desviaciones típicas por el método de momentos ("noniterative computation of the means and standard deviations") | Cargas normales | Sin Monte Carlo; dos sistemas de ejemplo | Pequeños |
+| Sandoval, Gong, Chung (2022), IEEE TPWRS | Cuadrático exacto en forma de inyección de barra, con Hessiana; carga ZIP aleatoria | Los dos primeros momentos (modelo "second-order second-moment"); cumulantes de orden mayor con una fórmula que supone entradas gaussianas | Gaussianas, condicionadas en series de tiempo | Error de momentos y densidades frente a Monte Carlo de 10⁵ muestras; asimetría y curtosis en una barra; **sin cuantiles extremos ni cobertura** | IEEE 37 barras trifásico |
+| Liu, Sun, Wang, Ju (2018), IEEE TPWRS | Solución AC analítica no lineal (holomorphic embedding), serie truncada | Cumulantes generalizados y densidad por Gram-Charlier | Paramétricas o datos; con covarianza | Curvas de densidad y distribución frente a Monte Carlo; la "mejor cola" se muestra en figuras | IEEE 30 |
+| Basirat, Mohammadi, Keihan Asl (2026), IJEPES | **Mapeo lineal** A = J⁻¹∇L (primer orden); el "segundo orden" es de la expansión asintótica de la densidad, tipo punto de silla | Función generadora de cumulantes; densidad y distribución sin integrar | Cualquier distribución, sin suponer normalidad | Densidad y distribución frente a Monte Carlo de 20.000 muestras y frente a punto de silla; colas comparadas en figuras | IEEE 14 y 118 |
+| Singh, Moger, Jena (2025), EPSR | Estimación por puntos de Hong con dos puntos extra en las colas (equivale a 4n+1 con momentos reducidos); Nataf para correlación | Momentos hasta el cuarto; densidad por Gram-Charlier | Viento, con correlación | Momentos y curvas frente a Monte Carlo de 10.000 muestras | Equivalentes de 24 y 72 barras |
+
+**Lo que confirma la lectura:**
+
+- **Segundo orden, incluidas las corrientes de línea, existe desde 1985.** No se puede presentar el modelo
+  cuadrático ni su aplicación a corrientes como aporte; hay que citar a Brucoli et al. (1985) y a Sandoval et al.
+  (2022).
+- **Ninguno de los cinco reporta cobertura de cuantiles extremos ni la probabilidad de que la cota sea violada.**
+  Validan momentos o curvas de densidad, con referencias de 10⁴ a 10⁵ muestras, y miden las colas a la vista.
+- **Ninguno usa el rango del término de segundo orden.** Todos lo resumen por momentos o cumulantes, y la mayoría
+  suponen entradas gaussianas para el segundo orden.
+- **Ninguno usa un radio sin supuesto de distribución.**
+- **El mayor sistema es de 118 barras.** El único trabajo a escala de transmisión es Roald y Andersson (2.383
+  barras), que es de primer orden.
+- Basirat et al. (2026) no es de segundo orden en el flujo: el segundo orden está en la aproximación de la densidad.
+
+**Aporte reformulado, defendible frente a estos cinco:** las cotas de cobertura al nivel del 0,27 % requieren el
+rango del término de segundo orden, no sus momentos (B4: los momentos fallan en 15 de 25 celdas de PEGASE). Con
+ese rango y un radio de concentración, las cotas linealizadas cubren frente a AC en voltajes, caídas y corrientes
+hasta 2.869 barras, donde cumulantes, estimación por puntos y 3σ no cubren (B8, B9).
