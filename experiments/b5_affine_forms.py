@@ -17,7 +17,9 @@ Checks: (1) AC Monte Carlo with the samples of B1; (2) the exact AC power flow a
 the first-order rule and the second-order search, against the deterministic bounds.
 
     python experiments/b5_affine_forms.py              # design point of both systems
-Writes results/b5_mc.csv, results/b5_vertex.csv, results/b5_width.csv
+    python experiments/b5_affine_forms.py sweep        # load x delta sweep of C1 (Monte Carlo only, no vertex search)
+    python experiments/b5_affine_forms.py surrogate    # coverage and cost against the number of surrogate samples
+Writes results/b5_mc.csv, results/b5_vertex.csv, results/b5_width.csv (design) or results/b5_sweep.csv
 """
 from time import perf_counter
 
@@ -46,8 +48,21 @@ def sampled_range(so, W, n, seed, batch=500):
     return lo, hi
 
 
-def build(st, delta, res, seed):
-    """Second-order models, bounds and worst vertices for the bus and drop targets."""
+def lin_vertex_values(tm, chunk=128):
+    """f_t at the first-order vertices +sign(c_t) and -sign(c_t)."""
+    nt = tm.c.shape[0]
+    fp, fm = np.empty(nt), np.empty(nt)
+    for s in range(0, nt, chunk):
+        idx = np.arange(s, min(s + chunk, nt))
+        X = np.sign(tm.c[idx]).T
+        X[X == 0] = 1.0
+        fp[idx], fm[idx] = tm.value(X, idx), tm.value(-X, idx)
+    return fp, fm
+
+
+def build(st, delta, res, seed, search=True):
+    """Second-order models, bounds and worst vertices for the bus and drop targets.
+    ``search=False``: no second-order vertex search (no det_s), for the sweep."""
     t = {}
     t0 = perf_counter()
     so = SecondOrder(st, delta)
@@ -65,13 +80,18 @@ def build(st, delta, res, seed):
         qmin, qmax = sampled_range(so, W, N_SURROGATE, seed + (1 if name == "bus" else 2))
         t_range = perf_counter() - t1
         t1 = perf_counter()
-        Xp, fp, fpl, nfp = tm.worst_vertices(+1)
-        Xm, fm, fml, nfm = tm.worst_vertices(-1)
+        if search:
+            Xp, fp, fpl, nfp = tm.worst_vertices(+1)
+            Xm, fm, fml, nfm = tm.worst_vertices(-1)
+        else:
+            fpl, fml = lin_vertex_values(tm)
+            fp, fm, Xp, Xm = fpl, fml, None, None
+            nfp = nfm = np.zeros(fpl.size, int)
         t_search = perf_counter() - t1
         qv_hi, qv_lo = fpl - r_aff, fml + r_aff                       # quadratic part at the first-order vertices
         b = {"det_lin": (-r_aff, r_aff),
              "det_v": (-r_aff + np.minimum(0.0, qv_lo), r_aff + np.maximum(0.0, qv_hi)),
-             "det_s": (np.minimum(-r_aff, fm), np.maximum(r_aff, fp)),
+             **({"det_s": (np.minimum(-r_aff, fm), np.maximum(r_aff, fp))} if search else {}),
              "bern": (-r_bern + np.minimum(0.0, qmin), r_bern + np.maximum(0.0, qmax)),
              "sig3": (-3 * sg + np.minimum(0.0, qmin), 3 * sg + np.maximum(0.0, qmax))}
         Xlin_p = np.sign(Ct).T
@@ -194,7 +214,148 @@ def run(key):
     return mc_rows, vx_rows, w_rows
 
 
+# ----------------------------------------------------------------------------- load x delta sweep (Monte Carlo only)
+SWEEP = {"bus": ("det_lin", "det_v", "bern", "sig3", "cdhim"), "drop": ("det_v", "bern", "sig3", "sub_bern", "sub_cdhim")}
+
+
+def run_sweep(task):
+    key, lf, tag, lam_max = task
+    sysc = CFG["systems"][key]
+    seed = seed_for("c1", key)                                   # the AC samples of C1 and B4
+    try:
+        st = study(sysc["case"], load_factor=lf, threads=worker_threads())
+    except RuntimeError as exc:
+        return [{"system": key, "load_factor": lf, "load_level": tag, "delta": d, "status": f"blocked: {exc}"} for d in EXP["deltas"]]
+    rows = []
+    for delta in EXP["deltas"]:
+        t0 = perf_counter()
+        res = st.run(delta, method())
+        so, out, timing = build(st, delta, res, seed, search=False)
+        rng = np.random.default_rng(seed)
+        C = st.C1 * delta
+        counts = {(tg, k, ref): np.zeros(out[tg]["W"].shape[1], np.int64) for tg, ks in SWEEP.items() for k in ks for ref in ("ac", "lin")}
+        anyc = {k_: 0 for k_ in counts}
+        n_ac = n_lin = 0
+        for s in range(0, EXP["n_sweep"], CFG["powerflow"]["batch"]):
+            b = min(CFG["powerflow"]["batch"], EXP["n_sweep"] - s)
+            eps = sample_eps(rng, st.src.n, b)
+            lin = C @ eps
+            V, conv, _ = st.solver.solve(st.injections(eps, delta))
+            ac = np.abs(V[st.grid.pq][:, conv]) - st.vm_star[:, None]
+            n_lin += b
+            n_ac += int(conv.sum())
+            for tg, ks in SWEEP.items():
+                Wt = out[tg]["W"].T.tocsr()
+                for ref, dv in (("ac", ac), ("lin", lin)):
+                    tv = Wt @ dv
+                    for k in ks:
+                        lo, hi = out[tg]["bounds"][k]
+                        bad = (tv < lo[:, None] - VIOLATION_ATOL) | (tv > hi[:, None] + VIOLATION_ATOL)
+                        counts[(tg, k, ref)] += bad.sum(axis=1)
+                        anyc[(tg, k, ref)] += int(bad.any(axis=0).sum())
+        row = {"system": key, "load_factor": lf, "load_level": tag, "loadability_limit": lam_max, "delta": delta,
+               "n_samples": n_lin, "seed": seed, "status": "ok", "nonconvergence_pct": pct(1 - n_ac / n_lin),
+               "t_correction_s": round(timing["second_order_build_s"] + timing["bus_range_s"] + timing["drop_range_s"], 2)}
+        for (tg, k, ref), c in counts.items():
+            nn = n_ac if ref == "ac" else n_lin
+            r = c / max(nn, 1)
+            row[f"{ref}_{tg}_{k}_max_pct"] = pct(r.max())
+            row[f"{ref}_{tg}_{k}_n_over"] = int((r > ALPHA).sum())
+            row[f"{ref}_{tg}_{k}_system_pct"] = pct(anyc[(tg, k, ref)] / max(nn, 1))
+        for tg, ks in SWEEP.items():
+            w0 = out[tg]["bounds"]["det_lin"][1] - out[tg]["bounds"]["det_lin"][0]
+            ok = w0 > 1e-10
+            for k in ks:
+                lo, hi = out[tg]["bounds"][k]
+                row[f"width_{tg}_{k}_over_affine_median"] = float(np.median((hi - lo)[ok] / w0[ok]))
+        rows.append(row)
+        print(f"[b5] sweep {key:11s} lf={lf:.3f} delta={delta:.2f} {perf_counter() - t0:5.0f}s nonconv={row['nonconvergence_pct']:.2f}%", flush=True)
+    return rows
+
+
+# ----------------------------------------------------------------------------- how many surrogate samples are needed
+SURROGATE_SIZES = (250, 500, 1000, 2000, 4000)
+SURROGATE_SEEDS = 3
+
+
+def run_surrogate(key):
+    """Coverage of the Bernstein bounds (bus and drop) against the AC samples of B1 when the range of the
+    quadratic term comes from fewer samples, and the single-process cost of the whole method."""
+    from cdhim.affine_forms import quadratic_ranges
+    sysc = CFG["systems"][key]
+    delta, n = sysc["delta"], EXP["n_ac"]
+    seed = seed_for("ac_design_point", key)
+    t0 = perf_counter()
+    st = study(sysc["case"], threads=worker_threads())
+    t_study = perf_counter() - t0
+    t0 = perf_counter()
+    res = st.run(delta, method())
+    so = SecondOrder(st, delta)
+    t_so = perf_counter() - t0
+    v = res.valid
+    n_pq = st.C1.shape[0]
+    Ws = {"bus": bus_targets(n_pq), "drop": drop_targets(n_pq, res.fi[v], res.ti[v])}
+    rb = {k: bernstein_radius(np.asarray(W.T @ (st.C1 * delta)), ALPHA) for k, W in Ws.items()}
+    bounds, times = {}, {}
+    for m in SURROGATE_SIZES:
+        for r in range(SURROGATE_SEEDS):
+            t0 = perf_counter()
+            rng_ = quadratic_ranges(so, Ws, m, seed + 100 + r)
+            times[(m, r)] = perf_counter() - t0
+            for k in Ws:
+                lo, hi = rng_[k]
+                bounds[(k, m, r)] = (-rb[k] + np.minimum(0.0, lo), rb[k] + np.maximum(0.0, hi))
+    for k in Ws:                                                   # no correction, for reference
+        bounds[(k, 0, 0)] = (-rb[k], rb[k])
+    counts = {b: np.zeros(Ws[b[0]].shape[1], np.int64) for b in bounds}
+    anyc = {b: 0 for b in bounds}
+    rng = np.random.default_rng(seed)
+    n_ac = 0
+    WT = {k: W.T.tocsr() for k, W in Ws.items()}
+    for s in range(0, n, CFG["powerflow"]["batch"]):
+        b = min(CFG["powerflow"]["batch"], n - s)
+        eps = sample_eps(rng, st.src.n, b)
+        V, conv, _ = st.solver.solve(st.injections(eps, delta))
+        ac = np.abs(V[st.grid.pq][:, conv]) - st.vm_star[:, None]
+        n_ac += int(conv.sum())
+        tv = {k: WT[k] @ ac for k in Ws}
+        for bk, (lo, hi) in bounds.items():
+            bad = (tv[bk[0]] < lo[:, None] - VIOLATION_ATOL) | (tv[bk[0]] > hi[:, None] + VIOLATION_ATOL)
+            counts[bk] += bad.sum(axis=1)
+            anyc[bk] += int(bad.any(axis=0).sum())
+    rows = []
+    for (k, m, r), c in counts.items():
+        rate = c / max(n_ac, 1)
+        lo, hi = bounds[(k, m, r)]
+        w0 = 2 * rb[k]
+        ok = w0 > 1e-10
+        rows.append({"system": key, "delta": delta, "seed": seed, "n_ac": n_ac, "target": k, "n_surrogate": m, "surrogate_rep": r,
+                     "max_pct": pct(rate.max()), "mean_pct": pct(rate.mean()), "n_over_alpha": int((rate > ALPHA).sum()),
+                     "system_level_pct": pct(anyc[(k, m, r)] / max(n_ac, 1)),
+                     "width_over_uncorrected_median": float(np.median((hi - lo)[ok] / w0[ok])),
+                     "t_range_s": round(times.get((m, r), 0.0), 3), "t_study_s": round(t_study, 3), "t_run_and_second_order_s": round(t_so, 3)})
+    print(f"[b5] surrogate {key} done", flush=True)
+    return rows
+
+
 def main():
+    import sys
+    from common import grid
+    from cdhim import loadability_limit
+    if "surrogate" in sys.argv[1:]:
+        rows = [r for k in CFG["systems"] for r in run_surrogate(k)]
+        print(save_table("b5_surrogate", rows, {"n_samples": EXP["n_ac"], "alpha": ALPHA,
+                                                "note": "run alone: the t_* columns are the single-process cost of the method"}))
+        return
+    if "sweep" in sys.argv[1:]:
+        tasks = []
+        for key, sysc in CFG["systems"].items():
+            lam_max, _ = loadability_limit(grid(sysc["case"]), tol=CFG["powerflow"]["tol_pu"])
+            levels = [(lf, "fixed") for lf in EXP["load_factors"]] + [(round(EXP["near_limit_fraction"] * lam_max, 4), "near_limit")]
+            tasks += [(key, lf, tag, lam_max) for lf, tag in levels]
+        rows = [r for o in parallel(run_sweep, tasks, workers=3) for r in o]
+        print(save_table("b5_sweep", rows, {"n_samples_per_cell": EXP["n_sweep"], "n_surrogate": N_SURROGATE, "alpha": ALPHA}))
+        return
     out = parallel(run, list(CFG["systems"]), workers=2)
     meta = {"n_samples": EXP["n_ac"], "n_surrogate": N_SURROGATE, "alpha": ALPHA,
             "note": "search row of b5_width: ratio_p10 = share of targets where the search flipped any symbol, "

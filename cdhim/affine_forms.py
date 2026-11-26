@@ -147,3 +147,21 @@ class TargetModel:
             Xout[:, idx] = X
             f_out[idx] = side * f
         return Xout, f_out, f_lin, n_flip
+
+
+# ----------------------------------------------------------------------------- sampled range of the quadratic part
+def quadratic_ranges(so: SecondOrder, Ws: dict, n: int, seed: int, batch: int = 500):
+    """Sampled (min, max) of the quadratic part of every target, for several target sets sharing the samples.
+    Double precision is needed: q is a sum of large terms that nearly cancel (single precision errs by
+    about 1e-7 p.u. on PEGASE-2869, the size of the ranges being estimated at many buses)."""
+    from .uncertainty import sample_eps
+    rng = np.random.default_rng(seed)
+    WT = {k: sp.csr_matrix(W.T) for k, W in Ws.items()}
+    out = {k: (np.full(W.shape[1], np.inf), np.full(W.shape[1], -np.inf)) for k, W in Ws.items()}
+    for s in range(0, n, batch):
+        q = so.quadratic(sample_eps(rng, so.c_lin.shape[1], min(batch, n - s)))
+        for k, Wt in WT.items():
+            v = Wt @ q
+            np.minimum(out[k][0], v.min(axis=1), out=out[k][0])
+            np.maximum(out[k][1], v.max(axis=1), out=out[k][1])
+    return out
