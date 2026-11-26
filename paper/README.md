@@ -25,6 +25,7 @@ el PDF no se versionan.
 
 No se pudo leer en línea: ScienceDirect rechaza la descarga automática. Por el artículo de Basirat et al. (IJEPES
 2026), la revista es **de acceso abierto (CC BY)**. **APC: 0 para este envío** (confirmado por los autores).
+
 - **Extensión:** el artículo de referencia tiene unas 10.000 palabras y 13 páginas.
 - **Resumen y highlights:** límite de palabras del resumen (el de referencia tiene unas 190), número de highlights y caracteres por viñeta (habitual en Elsevier: 3 a 5, hasta 85 caracteres).
 - **Revisión:** simple o doble ciego. Si es doble ciego, va una página de título aparte.
