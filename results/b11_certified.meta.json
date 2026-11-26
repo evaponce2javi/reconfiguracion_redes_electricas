@@ -1,0 +1,21 @@
+{
+  "table": "b11_certified",
+  "script": "b11_certified.py",
+  "generated_utc": "2026-11-26T19:25:02+00:00",
+  "git_commit": "35b6572",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "n_samples": 20000,
+  "alpha": 0.0027000000000000357,
+  "sizes": [
+    1000,
+    4000,
+    10000
+  ],
+  "note": "certified: Bernstein at alpha - 2/(n+1) plus the range of n samples of the nonlinear part; uncertified: Bernstein at alpha plus the range of 1.000 samples; t_samples_s prorated from the 10.000-sample draw"
+}

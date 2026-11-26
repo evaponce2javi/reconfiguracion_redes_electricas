@@ -326,13 +326,28 @@ def t_b5_n250(h):
                                         ("w", "Ancho / caja afín, mediana", ".3f")])
 
 
+def t_b11(h):
+    d = _csv(h, "b11_certified")
+    rows = []
+    for (case, tg, kind, m), g in d.groupby(["case", "target", "kind", "n_surrogate"], sort=False):
+        rows.append({"sys": _CASES[case], "o": list(_CASES).index(case), "tg": {"bus": "barra", "drop": "caída", "current": "corriente"}[tg],
+                     "to": ["bus", "drop", "current"].index(tg), "kind": "sin certificar (B5)" if kind == "uncertified" else "certificada",
+                     "ko": 0 if kind == "uncertified" else 1, "m": int(m), "al": g.alpha_linear.iloc[0], "cells": len(g),
+                     "bad": int((g.n_over_alpha > 0).sum()), "worst": g.max_pct.max(), "w": g.width_over_uncertified_median.median(),
+                     "wmax": g.width_over_uncertified_max.max()})
+    df = pd.DataFrame(rows).sort_values(["o", "to", "ko", "m"])
+    return h.table(df, [("sys", "Sistema", None), ("tg", "Objetivo", None), ("kind", "Cota", None), ("m", "Muestras de q", "d"),
+                        ("al", "Nivel de la parte lineal α_L", ".5f"), ("cells", "Celdas", "d"), ("bad", "Celdas con alguno sobre 0,27 %", "d"),
+                        ("worst", "Peor violación (%)", ".3f"), ("w", "Ancho / sin certificar, mediana", ".3f"), ("wmax", "máximo", ".2f")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
             "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
             "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop"),
             "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h),
-            "b8": lambda: t_b8(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
+            "b8": lambda: t_b8(h), "b11": lambda: t_b11(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
@@ -426,7 +441,15 @@ def values(h):
         "B10_S3_MAX": n(b10b[b10b.in_model & (b10b.radius == "sig3_true_var")].max_pct.max(), ".1f"),
         "B5_N250_MAX": n(n250.ac_bus_bern_max_pct.max(), ".3f"),
     }
-    return {**b6v, **b7v, **b8v,
+    b11 = _csv(h, "b11_certified")
+    c4 = b11[(b11.kind == "certified") & (b11.n_surrogate == 4000)]
+    c1 = b11[(b11.kind == "certified") & (b11.n_surrogate == 1000)]
+    tq = b11[(b11.case == P) & (b11.n_surrogate == 4000)].t_samples_s.max()
+    b11v = {"B11_W4": n(100 * (c4.width_over_uncertified_median.median() - 1), ".1f"),
+            "B11_W1": n(100 * (c1.width_over_uncertified_median.median() - 1), ".1f"),
+            "B11_WMAX4": n(c4.width_over_uncertified_max.max(), ".2f"),
+            "B11_WORST": n(b11[b11.kind == "certified"].max_pct.max(), ".3f"), "B11_T4": n(tq, ".0f")}
+    return {**b6v, **b7v, **b8v, **b11v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),
         "B4_ELL_0": n(pr.loc["none", "max_pct"], ".2f"), "B4_ELL_0N": n(pr.loc["none", "n_branches_over_0.27pct"], "d"),

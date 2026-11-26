@@ -3588,6 +3588,81 @@ Con 250 muestras ninguna celda supera el nominal, pero la peor barra de PEGASE s
 La cola del rango queda subestimada en las celdas más exigentes. Se recomienda 1.000 muestras, que cuestan alrededor
 de un segundo en PEGASE-2869 (28.5).
 
+### 28.12 Nivel certificado para el modelo de segundo orden (B11)
+
+**El argumento.** Para un objetivo Y = L + Q del modelo de segundo orden y la cota [−r + mín(0, q_mín), r + máx(0, q_máx)],
+con q_mín y q_máx los extremos de n muestras independientes de Q,
+
+P(Y fuera) ≤ P(|L| > r) + P(Q > q_máx) + P(Q < q_mín) ≤ α_L + 2/(n + 1),
+
+porque una muestra nueva e intercambiable supera el máximo de otras n (o cae bajo su mínimo) con probabilidad a lo
+más 1/(n + 1), sea cual sea su distribución (estadísticos de orden; la probabilidad es sobre la muestra nueva y las n).
+Con α_L = α − 2/(n + 1) en el radio de Bernstein, la cota tiene nivel α para el modelo de segundo orden
+(`cdhim.affine_forms.certified_split`). Supuestos: símbolos independientes con soporte en [−1, 1] y varianza a lo más
+la usada, y muestras de Q tomadas con la ley de los símbolos. El tercer orden y los superiores no los cubre el
+argumento: se miden contra AC. Mismas celdas que B8 y B9.
+
+| Sistema | Objetivo | Cota | Muestras de q | Nivel de la parte lineal α_L | Celdas | Celdas con alguno sobre 0,27 % | Peor violación (%) | Ancho / sin certificar, mediana | máximo |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | barra | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,000 | 1,000 | 1,00 |
+| IEEE-33 | barra | certificada | 1000 | 0,00070 | 3 | 0 | 0,000 | 1,139 | 1,15 |
+| IEEE-33 | barra | certificada | 4000 | 0,00220 | 3 | 0 | 0,000 | 1,023 | 1,03 |
+| IEEE-33 | barra | certificada | 10000 | 0,00250 | 3 | 0 | 0,000 | 1,009 | 1,03 |
+| IEEE-33 | caída | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,005 | 1,000 | 1,00 |
+| IEEE-33 | caída | certificada | 1000 | 0,00070 | 3 | 0 | 0,000 | 1,000 | 1,15 |
+| IEEE-33 | caída | certificada | 4000 | 0,00220 | 3 | 0 | 0,000 | 1,002 | 1,04 |
+| IEEE-33 | caída | certificada | 10000 | 0,00250 | 3 | 0 | 0,000 | 1,002 | 1,03 |
+| IEEE-33 | corriente | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,000 | 1,000 | 1,00 |
+| IEEE-33 | corriente | certificada | 1000 | 0,00070 | 3 | 0 | 0,000 | 1,000 | 1,16 |
+| IEEE-33 | corriente | certificada | 4000 | 0,00220 | 3 | 0 | 0,000 | 1,004 | 1,04 |
+| IEEE-33 | corriente | certificada | 10000 | 0,00250 | 3 | 0 | 0,000 | 1,006 | 1,03 |
+| PEGASE-2869 | barra | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,105 | 1,000 | 1,00 |
+| PEGASE-2869 | barra | certificada | 1000 | 0,00070 | 3 | 0 | 0,090 | 1,136 | 1,17 |
+| PEGASE-2869 | barra | certificada | 4000 | 0,00220 | 3 | 0 | 0,060 | 1,024 | 1,16 |
+| PEGASE-2869 | barra | certificada | 10000 | 0,00250 | 3 | 0 | 0,010 | 1,014 | 1,26 |
+| PEGASE-2869 | caída | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,020 | 1,000 | 1,00 |
+| PEGASE-2869 | caída | certificada | 1000 | 0,00070 | 3 | 0 | 0,010 | 1,128 | 1,17 |
+| PEGASE-2869 | caída | certificada | 4000 | 0,00220 | 3 | 0 | 0,015 | 1,023 | 1,12 |
+| PEGASE-2869 | caída | certificada | 10000 | 0,00250 | 3 | 0 | 0,010 | 1,011 | 1,18 |
+| PEGASE-2869 | corriente | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,040 | 1,000 | 1,00 |
+| PEGASE-2869 | corriente | certificada | 1000 | 0,00070 | 3 | 0 | 0,040 | 1,112 | 1,17 |
+| PEGASE-2869 | corriente | certificada | 4000 | 0,00220 | 3 | 0 | 0,030 | 1,027 | 1,70 |
+| PEGASE-2869 | corriente | certificada | 10000 | 0,00250 | 3 | 0 | 0,015 | 1,035 | 2,64 |
+| IEEE-118 | barra | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,005 | 1,000 | 1,00 |
+| IEEE-118 | barra | certificada | 1000 | 0,00070 | 3 | 0 | 0,005 | 1,000 | 1,15 |
+| IEEE-118 | barra | certificada | 4000 | 0,00220 | 3 | 0 | 0,000 | 1,004 | 1,09 |
+| IEEE-118 | barra | certificada | 10000 | 0,00250 | 3 | 0 | 0,000 | 1,008 | 1,10 |
+| IEEE-118 | caída | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,000 | 1,000 | 1,00 |
+| IEEE-118 | caída | certificada | 1000 | 0,00070 | 3 | 0 | 0,000 | 1,000 | 1,15 |
+| IEEE-118 | caída | certificada | 4000 | 0,00220 | 3 | 0 | 0,000 | 1,004 | 1,09 |
+| IEEE-118 | caída | certificada | 10000 | 0,00250 | 3 | 0 | 0,000 | 1,007 | 1,11 |
+| IEEE-118 | corriente | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,150 | 1,000 | 1,00 |
+| IEEE-118 | corriente | certificada | 1000 | 0,00070 | 3 | 0 | 0,150 | 1,000 | 1,16 |
+| IEEE-118 | corriente | certificada | 4000 | 0,00220 | 3 | 0 | 0,040 | 1,008 | 1,35 |
+| IEEE-118 | corriente | certificada | 10000 | 0,00250 | 3 | 0 | 0,005 | 1,010 | 1,36 |
+| PEGASE-1354 | barra | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,025 | 1,000 | 1,00 |
+| PEGASE-1354 | barra | certificada | 1000 | 0,00070 | 3 | 0 | 0,025 | 1,135 | 1,17 |
+| PEGASE-1354 | barra | certificada | 4000 | 0,00220 | 3 | 0 | 0,025 | 1,023 | 1,07 |
+| PEGASE-1354 | barra | certificada | 10000 | 0,00250 | 3 | 0 | 0,020 | 1,010 | 1,13 |
+| PEGASE-1354 | caída | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,055 | 1,000 | 1,00 |
+| PEGASE-1354 | caída | certificada | 1000 | 0,00070 | 3 | 0 | 0,055 | 1,060 | 1,17 |
+| PEGASE-1354 | caída | certificada | 4000 | 0,00220 | 3 | 0 | 0,055 | 1,020 | 1,05 |
+| PEGASE-1354 | caída | certificada | 10000 | 0,00250 | 3 | 0 | 0,030 | 1,008 | 1,13 |
+| PEGASE-1354 | corriente | sin certificar (B5) | 1000 | 0,00270 | 3 | 0 | 0,010 | 1,000 | 1,00 |
+| PEGASE-1354 | corriente | certificada | 1000 | 0,00070 | 3 | 0 | 0,010 | 1,117 | 1,17 |
+| PEGASE-1354 | corriente | certificada | 4000 | 0,00220 | 3 | 0 | 0,005 | 1,021 | 1,68 |
+| PEGASE-1354 | corriente | certificada | 10000 | 0,00250 | 3 | 0 | 0,005 | 1,011 | 2,12 |
+
+*Script: `experiments/b11_certified.py` · CSV: `results/b11_certified.csv`*
+
+- Certificar cuesta poco ancho: con 4.000 muestras, 2,2 % en mediana sobre la cota sin certificar (con 1.000,
+  9,6 %, porque α_L baja a 0,07 %); en alguna corriente el ancho llega a 1,70 veces, donde el rango de
+  4.000 muestras alcanza más cola que el de 1.000.
+- Ninguna celda supera el nominal (peor objetivo 0,150 %).
+- Costo: en PEGASE-2869, unos 27 s para las 4.000 muestras de barras, caídas y corrientes. Lo caro son las
+  corrientes, que necesitan el estado de segundo orden (una resolución por lote); para barras y caídas bastan unos
+  4 s (28.5).
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -3598,7 +3673,8 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 |---|---|---|---|
 | 1 | Las formas afines de |V| se obtienen de una factorización LU dispersa en el punto AC y escalan a 9.241 barras | C7, `results/c7_timing.csv` | El bloque de sensibilidades es denso: el método completo escala como N^1,5, no N^1,2 |
 | 2 | El error de linealización es lo único que separa las cotas del 0,27 % nominal en el punto de diseño | B1 y 27.1 (columnas lineal y AC) | En la peor barra de PEGASE |
-| 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza, que es lo que hacen los métodos de segundo orden publicados, no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda), en dos sistemas; el rango es muestreado, no acotado. El modelo de segundo orden en sí no es nuevo (RELATED_WORK.md, sexta pasada) |
+| 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza, que es lo que hacen los métodos de segundo orden publicados, no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda). El modelo de segundo orden en sí no es nuevo (RELATED_WORK.md, sexta pasada) |
+| 3b | Con α_L = α − 2/(n+1), la cota tiene nivel α demostrable para el modelo de segundo orden, a un costo de pocos puntos porcentuales de ancho | 28.12 | Supone independencia, soporte acotado y la ley de los símbolos para muestrear; no cubre el tercer orden (medido, no acotado) |
 | 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Caídas de magnitud de voltaje |
 | 4b | Las corrientes de rama se acotan con la misma construcción y cubren; ahí el rango del término no lineal es imprescindible | 28.9 | El segundo orden de las corrientes ya existe (Brucoli et al. 1985; Sandoval et al. 2022, RELATED_WORK.md): lo nuevo es la cobertura. Validado en las tres celdas de B8 de cada sistema |
 | 4c | Los métodos publicados de flujo probabilístico (cumulantes, estimación por puntos) no cubren a este nivel, ni en barras ni en corrientes | 28.8, 28.9 | Con Cornish-Fisher; otras expansiones (Gram-Charlier) no se probaron |
