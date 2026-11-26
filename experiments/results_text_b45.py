@@ -189,6 +189,42 @@ Punto de diseño, 20.000 muestras AC por caso, 1.000 muestras de q.
   correlacionadas y se reduce con un factor común fuerte. Con correlación fuerte, el balance por la slack sola no es
   un supuesto razonable a escala de transmisión.
 
+### 28.7 Cobertura simultánea y dos sistemas más (B7)
+
+**Montaje.** Con una cota de unión (Bonferroni), cada objetivo recibe el nivel α/m, con m el número de barras (o de
+caídas) con incertidumbre; "barras y caídas" usa m = barras + caídas. Se mide la fracción de muestras AC con
+**algún** objetivo fuera, que es la cobertura del sistema. Radios: Bernstein, Gauss (cuantil normal), Chebyshev,
+todos topados por la caja afín y con el rango de q (1.000 muestras). Se agregan IEEE-118 y PEGASE-1354, ambos con
+barras PV, en una grilla de carga (0,8; 1,0; 1,2; 95 % del límite de cargabilidad) × δ (5, 15 y 30 %), con 20.000
+muestras por celda.
+
+**Punto de diseño de cada sistema** (IEEE-118 y PEGASE-1354: carga 1,0 y δ = 5 %)
+
+{{b7_design}}
+
+**Grilla de IEEE-118 y PEGASE-1354**
+
+{{b7_grid}}
+
+*Script: `experiments/b7_generality.py` · CSV: `results/b7_generality.csv` · las muestras AC sin converger se excluyen,
+como en C1*
+
+- **La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso.** En PEGASE-2869 el radio
+  de Bernstein pasa de <<B7_BERN_PT>> veces la caja afín por barra a <<B7_BERN_BF>> con Bonferroni. Lo mismo ocurre en
+  los cuatro sistemas. El crecimiento en √ln(m/α) es lento, pero el radio por barra ya estaba cerca del tope.
+- **Gauss con Bonferroni cubre en la práctica** con <<B7_GAUSS_BF>> veces la caja afín (muestras con alguna barra fuera:
+  <<B7_GAUSS_BF_ANY>> %), pero sin garantía: por barra, Gauss deja <<B7_GAUSS_PT_ANY>> % de las muestras con alguna
+  barra fuera, y en PEGASE-1354 falla por barra en <<B7_GAUSS_BAD1354>> de las 12 celdas.
+- **Bernstein por barra ya da una cobertura del sistema cercana al nominal, sin estar diseñado para eso:** muestras con
+  alguna barra o caída fuera, <<B7_BERN_PT_ANY>> % en PEGASE-2869 y como máximo <<B7_BERN_PT_ANY_GRID>> % en la grilla.
+  Es una observación empírica, no una garantía.
+- **La ventaja de la concentración depende de cuántas fuentes comparables mueven cada barra.** Bernstein por barra mide
+  <<B7_W1354>> veces la caja afín en PEGASE-1354 y <<B7_W118>> en IEEE-118, donde queda topado en el <<B7_CAP118>> % de las
+  barras: allí pocas cargas mueven cada barra y no hay qué promediar.
+- **Generalidad de la corrección:** en los dos sistemas nuevos Bernstein con el rango de q no supera el nominal en
+  ninguna celda. Cerca del límite de cargabilidad con δ alto no converge hasta el <<B7_NC_MAX>> % de las muestras AC; esas
+  celdas hay que leerlas con la advertencia de C1.
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -203,11 +239,12 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
 | 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1] |
 | 5b | Fuentes correlacionadas: escritas como símbolos compartidos, el mismo método cubre; suponer independencia o un modelo mal especificado no | 28.6 | La ganancia sobre el peor caso cae con un factor común fuerte; la estructura de correlación es un supuesto del modelo; con la slack sola y correlación fuerte falla la linealización en PEGASE |
-| 6 | 3σ, la reformulación gaussiana habitual, no cubre aun corregida | 27.2, 28.3 | Cobertura por objetivo, no simultánea (C5) |
+| 6 | 3σ, la reformulación gaussiana habitual, no cubre por objetivo aun corregida | 27.2, 28.3, 28.7 | Con Bonferroni sí cubre en la práctica, sin garantía |
+| 6b | La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso; la ventaja de la concentración es por objetivo y depende del número de fuentes por barra | 28.7 | En IEEE-118 la concentración no aporta |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
 | 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
 
-Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, correlación estimada de datos
-reales de carga y generación, sistemas distintos de los dos del manuscrito para la corrección, y una revisión
+Lo que este informe no respalda todavía: una garantía simultánea más angosta que el peor caso, correlación estimada de datos
+reales de carga y generación, la corrección en otros sistemas con el barrido completo de C1 (B7 usa una grilla de 12 celdas), y una revisión
 bibliográfica en bases indexadas (RELATED_WORK.md, quinta pasada).
 """

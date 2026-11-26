@@ -212,11 +212,48 @@ def t_b6(h, target):
                         ("aff", "Caja afín (peor caso lineal): violación máx. (%)", ".3f"), ("nc", "AC sin converger", "d")])
 
 
+_CASES = {"case33bw": "IEEE-33", "pglib_opf_case2869_pegase": "PEGASE-2869", "case118": "IEEE-118", "case1354pegase": "PEGASE-1354"}
+_LEVEL = {"per_target": "por objetivo (α)", "bonferroni_own": "simultáneo, Bonferroni", "bonferroni_both": "simultáneo barras y caídas"}
+_RAD = {"bernstein": "Bernstein", "gauss": "Gauss", "chebyshev": "Chebyshev", "affine": "caja afín"}
+
+
+def t_b7_design(h):
+    d = _csv(h, "b7_generality")
+    d = d[(d.status == "ok") & ((d.load_level == "design") | ((d.load_factor == 1.0) & (d.delta == 0.05)))]
+    d = d[d.level != "bonferroni_both"].copy()
+    d["sys"] = d.case.map(_CASES)
+    d["tg"] = d.target.map({"bus": "barra", "drop": "caída"})
+    d["lv"] = d.level.map(_LEVEL)
+    d["r"] = d.radius.map(_RAD)
+    d["o"] = d.case.map(list(_CASES).index)
+    d = d.sort_values(["o", "target", "level"], kind="stable")
+    return h.table(d, [("sys", "Sistema", None), ("delta", "δ", ".2f"), ("tg", "Objetivo", None), ("lv", "Nivel", None), ("r", "Radio", None),
+                       ("max_pct", "Peor objetivo (%)", ".3f"), ("any_target_pct", "Muestras con alguno fuera (%)", ".3f"),
+                       ("any_bus_or_drop_pct", "con alguna barra o caída fuera (%)", ".3f"),
+                       ("width_over_affine_median", "Ancho / caja afín, mediana", ".2f"),
+                       ("capped_by_affine_pct", "Topado por la caja afín (%)", ".0f")])
+
+
+def t_b7_grid(h):
+    d = _csv(h, "b7_generality")
+    d = d[(d.status == "ok") & (d.load_level != "design") & (d.level != "bonferroni_both")]
+    rows = []
+    for (case, tg, lv, r), g in d.groupby(["case", "target", "level", "radius"], sort=False):
+        rows.append({"sys": _CASES[case], "tg": "barra" if tg == "bus" else "caída", "lv": _LEVEL[lv], "r": _RAD[r], "cells": len(g),
+                     "bad": int((g.n_over_alpha > 0).sum()), "worst": g.max_pct.max(), "anyw": g.any_bus_or_drop_pct.max(),
+                     "w": g.width_over_affine_median.median(), "nc": int(g.n_ac_not_converged.max())})
+    return h.table(pd.DataFrame(rows), [("sys", "Sistema", None), ("tg", "Objetivo", None), ("lv", "Nivel", None), ("r", "Radio", None),
+                                        ("cells", "Celdas", "d"), ("bad", "Celdas con algún objetivo sobre 0,27 %", "d"),
+                                        ("worst", "Peor objetivo (%)", ".3f"), ("anyw", "Peor celda: muestras con alguna barra o caída fuera (%)", ".3f"),
+                                        ("w", "Ancho / caja afín, mediana de las celdas", ".2f"), ("nc", "Máx. muestras AC sin converger en una celda", "d")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
             "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
-            "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop")}
+            "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop"),
+            "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h)}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
@@ -262,7 +299,28 @@ def values(h):
         "B6_COP_AFF_PART": n(cop[(cop.bound == "affine") & (cop.balancing == "participation")].max_pct.max(), ".3f"),
         "B6_COP_S3": n(cop[cop.bound == "sig3_true"].max_pct.max(), ".2f"),
     }
-    return {**b6v,
+    b7 = _csv(h, "b7_generality")
+    b7 = b7[b7.status == "ok"]
+    dz = b7[(b7.load_level == "design") | ((b7.load_factor == 1.0) & (b7.delta == 0.05))]
+    pick = lambda case, tg, lv, r, col: dz[(dz.case == case) & (dz.target == tg) & (dz.level == lv) & (dz.radius == r)][col].iloc[0]
+    P = "pglib_opf_case2869_pegase"
+    grid7 = b7[b7.load_level != "design"]
+    b7v = {
+        "B7_BERN_PT": n(pick(P, "bus", "per_target", "bernstein", "width_over_affine_median"), ".2f"),
+        "B7_BERN_BF": n(pick(P, "bus", "bonferroni_own", "bernstein", "width_over_affine_median"), ".2f"),
+        "B7_GAUSS_BF": n(pick(P, "bus", "bonferroni_own", "gauss", "width_over_affine_median"), ".2f"),
+        "B7_GAUSS_BF_ANY": n(pick(P, "bus", "bonferroni_own", "gauss", "any_target_pct"), ".3f"),
+        "B7_GAUSS_PT_ANY": n(pick(P, "bus", "per_target", "gauss", "any_target_pct"), ".0f"),
+        "B7_BERN_PT_ANY": n(pick(P, "bus", "per_target", "bernstein", "any_bus_or_drop_pct"), ".3f"),
+        "B7_BERN_PT_ANY_GRID": n(grid7[(grid7.level == "per_target") & (grid7.radius == "bernstein")].any_bus_or_drop_pct.max(), ".3f"),
+        "B7_W118": n(pick("case118", "bus", "per_target", "bernstein", "width_over_affine_median"), ".2f"),
+        "B7_W1354": n(pick("case1354pegase", "bus", "per_target", "bernstein", "width_over_affine_median"), ".2f"),
+        "B7_CAP118": n(pick("case118", "bus", "per_target", "bernstein", "capped_by_affine_pct"), ".0f"),
+        "B7_GAUSS_BAD1354": n(int((grid7[(grid7.case == "case1354pegase") & (grid7.target == "bus") & (grid7.level == "per_target")
+                                         & (grid7.radius == "gauss")].n_over_alpha > 0).sum()), "d"),
+        "B7_NC_MAX": n(100 * grid7.n_ac_not_converged.max() / grid7.n_samples.max(), ".0f"),
+    }
+    return {**b6v, **b7v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),
         "B4_ELL_0": n(pr.loc["none", "max_pct"], ".2f"), "B4_ELL_0N": n(pr.loc["none", "n_branches_over_0.27pct"], "d"),

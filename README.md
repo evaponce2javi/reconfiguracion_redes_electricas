@@ -39,6 +39,7 @@ python experiments/run_all.py x13 x14        # escala (más de 1 h, a solas para
 python experiments/run_all.py b4 b5          # corrección de segundo orden (B4: punto de diseño, barrido y tiempos, unas 2,5 h) y formas afines (B5: punto de diseño)
 python experiments/b5_affine_forms.py sweep  # B5: barrido carga x delta (unas 2 h); también: surrogate, radii
 python experiments/b6_correlated.py          # B6: fuentes correlacionadas como símbolos compartidos (unos 30 min)
+python experiments/b7_generality.py          # B7: cobertura simultánea e IEEE-118 / PEGASE-1354 (unas 2 h)
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```

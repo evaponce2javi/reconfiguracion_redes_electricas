@@ -1,0 +1,17 @@
+{
+  "table": "b7_generality",
+  "script": "b7_generality.py",
+  "generated_utc": "2026-11-26T16:14:34+00:00",
+  "git_commit": "5ec3634",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "n_samples": 20000,
+  "alpha": 0.0027000000000000357,
+  "n_surrogate": 1000,
+  "note": "bonferroni_own: alpha / (number of targets of that kind); bonferroni_both: alpha / (buses + drops); any_target_pct: samples with some target of that kind outside; any_bus_or_drop_pct: some bus or drop outside, both kinds at the same level"
+}

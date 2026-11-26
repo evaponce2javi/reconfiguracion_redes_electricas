@@ -3232,6 +3232,128 @@ Punto de diseño, 20.000 muestras AC por caso, 1.000 muestras de q.
   correlacionadas y se reduce con un factor común fuerte. Con correlación fuerte, el balance por la slack sola no es
   un supuesto razonable a escala de transmisión.
 
+### 28.7 Cobertura simultánea y dos sistemas más (B7)
+
+**Montaje.** Con una cota de unión (Bonferroni), cada objetivo recibe el nivel α/m, con m el número de barras (o de
+caídas) con incertidumbre; "barras y caídas" usa m = barras + caídas. Se mide la fracción de muestras AC con
+**algún** objetivo fuera, que es la cobertura del sistema. Radios: Bernstein, Gauss (cuantil normal), Chebyshev,
+todos topados por la caja afín y con el rango de q (1.000 muestras). Se agregan IEEE-118 y PEGASE-1354, ambos con
+barras PV, en una grilla de carga (0,8; 1,0; 1,2; 95 % del límite de cargabilidad) × δ (5, 15 y 30 %), con 20.000
+muestras por celda.
+
+**Punto de diseño de cada sistema** (IEEE-118 y PEGASE-1354: carga 1,0 y δ = 5 %)
+
+| Sistema | δ | Objetivo | Nivel | Radio | Peor objetivo (%) | Muestras con alguno fuera (%) | con alguna barra o caída fuera (%) | Ancho / caja afín, mediana | Topado por la caja afín (%) |
+|---|---:|---|---|---|---:|---:|---:|---:|---:|
+| IEEE-33 | 0,15 | barra | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 0,96 | 47 |
+| IEEE-33 | 0,15 | barra | simultáneo, Bonferroni | Gauss | 0,005 | 0,005 | 0,010 | 0,45 | 0 |
+| IEEE-33 | 0,15 | barra | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-33 | 0,15 | barra | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 0,70 | 28 |
+| IEEE-33 | 0,15 | barra | por objetivo (α) | Gauss | 0,215 | 0,670 | 1,430 | 0,34 | 0 |
+| IEEE-33 | 0,15 | barra | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-33 | 0,15 | barra | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-33 | 0,15 | caída | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 97 |
+| IEEE-33 | 0,15 | caída | simultáneo, Bonferroni | Gauss | 0,005 | 0,010 | 0,010 | 0,87 | 35 |
+| IEEE-33 | 0,15 | caída | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-33 | 0,15 | caída | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 77 |
+| IEEE-33 | 0,15 | caída | por objetivo (α) | Gauss | 0,200 | 1,175 | 1,430 | 0,67 | 13 |
+| IEEE-33 | 0,15 | caída | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-33 | 0,15 | caída | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-2869 | 0,05 | barra | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 0,99 | 49 |
+| PEGASE-2869 | 0,05 | barra | simultáneo, Bonferroni | Gauss | 0,005 | 0,005 | 0,005 | 0,42 | 9 |
+| PEGASE-2869 | 0,05 | barra | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-2869 | 0,05 | barra | por objetivo (α) | Bernstein | 0,015 | 0,020 | 0,025 | 0,54 | 20 |
+| PEGASE-2869 | 0,05 | barra | por objetivo (α) | Gauss | 0,295 | 37,325 | 72,550 | 0,26 | 4 |
+| PEGASE-2869 | 0,05 | barra | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 85 |
+| PEGASE-2869 | 0,05 | barra | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-2869 | 0,05 | caída | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 68 |
+| PEGASE-2869 | 0,05 | caída | simultáneo, Bonferroni | Gauss | 0,000 | 0,000 | 0,005 | 0,60 | 26 |
+| PEGASE-2869 | 0,05 | caída | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-2869 | 0,05 | caída | por objetivo (α) | Bernstein | 0,005 | 0,010 | 0,025 | 0,80 | 40 |
+| PEGASE-2869 | 0,05 | caída | por objetivo (α) | Gauss | 0,290 | 66,975 | 72,550 | 0,36 | 14 |
+| PEGASE-2869 | 0,05 | caída | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 88 |
+| PEGASE-2869 | 0,05 | caída | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | barra | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 87 |
+| IEEE-118 | 0,05 | barra | simultáneo, Bonferroni | Gauss | 0,005 | 0,020 | 0,025 | 0,89 | 43 |
+| IEEE-118 | 0,05 | barra | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | barra | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 76 |
+| IEEE-118 | 0,05 | barra | por objetivo (α) | Gauss | 0,185 | 2,130 | 3,205 | 0,66 | 21 |
+| IEEE-118 | 0,05 | barra | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | barra | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | caída | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 91 |
+| IEEE-118 | 0,05 | caída | simultáneo, Bonferroni | Gauss | 0,005 | 0,010 | 0,025 | 0,80 | 37 |
+| IEEE-118 | 0,05 | caída | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | caída | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 74 |
+| IEEE-118 | 0,05 | caída | por objetivo (α) | Gauss | 0,200 | 1,605 | 3,205 | 0,60 | 11 |
+| IEEE-118 | 0,05 | caída | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| IEEE-118 | 0,05 | caída | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-1354 | 0,05 | barra | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 61 |
+| PEGASE-1354 | 0,05 | barra | simultáneo, Bonferroni | Gauss | 0,000 | 0,000 | 0,000 | 0,53 | 16 |
+| PEGASE-1354 | 0,05 | barra | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-1354 | 0,05 | barra | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 0,74 | 33 |
+| PEGASE-1354 | 0,05 | barra | por objetivo (α) | Gauss | 0,305 | 20,645 | 39,990 | 0,34 | 8 |
+| PEGASE-1354 | 0,05 | barra | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 94 |
+| PEGASE-1354 | 0,05 | barra | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-1354 | 0,05 | caída | simultáneo, Bonferroni | Bernstein | 0,000 | 0,000 | 0,000 | 1,00 | 73 |
+| PEGASE-1354 | 0,05 | caída | simultáneo, Bonferroni | Gauss | 0,000 | 0,000 | 0,000 | 0,69 | 32 |
+| PEGASE-1354 | 0,05 | caída | simultáneo, Bonferroni | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+| PEGASE-1354 | 0,05 | caída | por objetivo (α) | Bernstein | 0,000 | 0,000 | 0,000 | 0,98 | 49 |
+| PEGASE-1354 | 0,05 | caída | por objetivo (α) | Gauss | 0,320 | 33,495 | 39,990 | 0,43 | 20 |
+| PEGASE-1354 | 0,05 | caída | por objetivo (α) | Chebyshev | 0,000 | 0,000 | 0,000 | 1,00 | 93 |
+| PEGASE-1354 | 0,05 | caída | por objetivo (α) | caja afín | 0,000 | 0,000 | 0,000 | 1,00 | 100 |
+
+**Grilla de IEEE-118 y PEGASE-1354**
+
+| Sistema | Objetivo | Nivel | Radio | Celdas | Celdas con algún objetivo sobre 0,27 % | Peor objetivo (%) | Peor celda: muestras con alguna barra o caída fuera (%) | Ancho / caja afín, mediana de las celdas | Máx. muestras AC sin converger en una celda |
+|---|---|---|---|---:|---:|---:|---:|---:|---:|
+| IEEE-118 | barra | por objetivo (α) | Bernstein | 12 | 0 | 0,005 | 0,005 | 1,01 | 4413 |
+| IEEE-118 | barra | por objetivo (α) | Gauss | 12 | 0 | 0,220 | 3,435 | 0,66 | 4413 |
+| IEEE-118 | barra | por objetivo (α) | Chebyshev | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | barra | por objetivo (α) | caja afín | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | barra | simultáneo, Bonferroni | Bernstein | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | barra | simultáneo, Bonferroni | Gauss | 12 | 0 | 0,060 | 0,080 | 0,90 | 4413 |
+| IEEE-118 | barra | simultáneo, Bonferroni | Chebyshev | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | caída | por objetivo (α) | Bernstein | 12 | 0 | 0,000 | 0,005 | 1,01 | 4413 |
+| IEEE-118 | caída | por objetivo (α) | Gauss | 12 | 0 | 0,210 | 3,435 | 0,59 | 4413 |
+| IEEE-118 | caída | por objetivo (α) | Chebyshev | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | caída | por objetivo (α) | caja afín | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | caída | simultáneo, Bonferroni | Bernstein | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| IEEE-118 | caída | simultáneo, Bonferroni | Gauss | 12 | 0 | 0,015 | 0,080 | 0,78 | 4413 |
+| IEEE-118 | caída | simultáneo, Bonferroni | Chebyshev | 12 | 0 | 0,000 | 0,000 | 1,01 | 4413 |
+| PEGASE-1354 | barra | por objetivo (α) | Bernstein | 12 | 0 | 0,045 | 0,085 | 0,72 | 6756 |
+| PEGASE-1354 | barra | por objetivo (α) | Gauss | 12 | 6 | 0,340 | 40,605 | 0,33 | 6756 |
+| PEGASE-1354 | barra | por objetivo (α) | Chebyshev | 12 | 0 | 0,045 | 0,080 | 1,01 | 6756 |
+| PEGASE-1354 | barra | por objetivo (α) | caja afín | 12 | 0 | 0,045 | 0,080 | 1,01 | 6756 |
+| PEGASE-1354 | barra | simultáneo, Bonferroni | Bernstein | 12 | 0 | 0,045 | 0,080 | 1,00 | 6756 |
+| PEGASE-1354 | barra | simultáneo, Bonferroni | Gauss | 12 | 0 | 0,045 | 0,110 | 0,52 | 6756 |
+| PEGASE-1354 | barra | simultáneo, Bonferroni | Chebyshev | 12 | 0 | 0,045 | 0,080 | 1,01 | 6756 |
+| PEGASE-1354 | caída | por objetivo (α) | Bernstein | 12 | 0 | 0,065 | 0,085 | 0,97 | 6756 |
+| PEGASE-1354 | caída | por objetivo (α) | Gauss | 12 | 6 | 0,405 | 40,605 | 0,44 | 6756 |
+| PEGASE-1354 | caída | por objetivo (α) | Chebyshev | 12 | 0 | 0,065 | 0,080 | 1,00 | 6756 |
+| PEGASE-1354 | caída | por objetivo (α) | caja afín | 12 | 0 | 0,065 | 0,080 | 1,00 | 6756 |
+| PEGASE-1354 | caída | simultáneo, Bonferroni | Bernstein | 12 | 0 | 0,065 | 0,080 | 1,00 | 6756 |
+| PEGASE-1354 | caída | simultáneo, Bonferroni | Gauss | 12 | 0 | 0,065 | 0,110 | 0,68 | 6756 |
+| PEGASE-1354 | caída | simultáneo, Bonferroni | Chebyshev | 12 | 0 | 0,065 | 0,080 | 1,00 | 6756 |
+
+*Script: `experiments/b7_generality.py` · CSV: `results/b7_generality.csv` · las muestras AC sin converger se excluyen,
+como en C1*
+
+- **La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso.** En PEGASE-2869 el radio
+  de Bernstein pasa de 0,54 veces la caja afín por barra a 0,99 con Bonferroni. Lo mismo ocurre en
+  los cuatro sistemas. El crecimiento en √ln(m/α) es lento, pero el radio por barra ya estaba cerca del tope.
+- **Gauss con Bonferroni cubre en la práctica** con 0,42 veces la caja afín (muestras con alguna barra fuera:
+  0,005 %), pero sin garantía: por barra, Gauss deja 37 % de las muestras con alguna
+  barra fuera, y en PEGASE-1354 falla por barra en 6 de las 12 celdas.
+- **Bernstein por barra ya da una cobertura del sistema cercana al nominal, sin estar diseñado para eso:** muestras con
+  alguna barra o caída fuera, 0,025 % en PEGASE-2869 y como máximo 0,085 % en la grilla.
+  Es una observación empírica, no una garantía.
+- **La ventaja de la concentración depende de cuántas fuentes comparables mueven cada barra.** Bernstein por barra mide
+  0,74 veces la caja afín en PEGASE-1354 y 1,00 en IEEE-118, donde queda topado en el 76 % de las
+  barras: allí pocas cargas mueven cada barra y no hay qué promediar.
+- **Generalidad de la corrección:** en los dos sistemas nuevos Bernstein con el rango de q no supera el nominal en
+  ninguna celda. Cerca del límite de cargabilidad con δ alto no converge hasta el 34 % de las muestras AC; esas
+  celdas hay que leerlas con la advertencia de C1.
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -3246,11 +3368,12 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
 | 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1] |
 | 5b | Fuentes correlacionadas: escritas como símbolos compartidos, el mismo método cubre; suponer independencia o un modelo mal especificado no | 28.6 | La ganancia sobre el peor caso cae con un factor común fuerte; la estructura de correlación es un supuesto del modelo; con la slack sola y correlación fuerte falla la linealización en PEGASE |
-| 6 | 3σ, la reformulación gaussiana habitual, no cubre aun corregida | 27.2, 28.3 | Cobertura por objetivo, no simultánea (C5) |
+| 6 | 3σ, la reformulación gaussiana habitual, no cubre por objetivo aun corregida | 27.2, 28.3, 28.7 | Con Bonferroni sí cubre en la práctica, sin garantía |
+| 6b | La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso; la ventaja de la concentración es por objetivo y depende del número de fuentes por barra | 28.7 | En IEEE-118 la concentración no aporta |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
 | 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
 
-Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, correlación estimada de datos
-reales de carga y generación, sistemas distintos de los dos del manuscrito para la corrección, y una revisión
+Lo que este informe no respalda todavía: una garantía simultánea más angosta que el peor caso, correlación estimada de datos
+reales de carga y generación, la corrección en otros sistemas con el barrido completo de C1 (B7 usa una grilla de 12 celdas), y una revisión
 bibliográfica en bases indexadas (RELATED_WORK.md, quinta pasada).
 
