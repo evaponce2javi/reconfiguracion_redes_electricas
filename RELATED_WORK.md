@@ -482,18 +482,18 @@ de 1985) y su búsqueda por texto es menos fina.
 
 | Trabajo | Qué hace | Diferencia con la propuesta | Nivel |
 |---|---|---|---|
-| Brucoli, Torelli, Trovato (1985), "Quadratic probabilistic load flow with linearly modelled dispatch", IJEPES 7(3), doi 10.1016/0142-0615(85)90042-0 | Flujo probabilístico con el modelo cuadrático | Antecedente clásico del segundo orden; no se pudo leer el resumen (autores por la referencia habitual, sin verificar) | Ficha |
+| Brucoli, Torelli, Napoli (1985), "Quadratic probabilistic load flow with linearly modelled dispatch", IJEPES, doi 10.1016/0142-0615(85)90042-0 | Flujo probabilístico con el modelo cuadrático | Antecedente clásico del segundo orden; sin resumen en OpenAlex ni acceso abierto | Ficha |
 | "The algorithm of probabilistic load flow retaining nonlinearity" (2002), PowerCon, doi 10.1109/icpst.2002.1047154 | Serie de Taylor con términos no lineales; esperanza y varianza; IEEE 14 | Momentos, no colas | R |
-| "Three-phase second-order analytic probabilistic load flow with voltage-dependent load" (2022), IEEE TPWRS, doi 10.1109/tpwrs.2022.3159392 | Modelo cuadrático exacto por inyección de corriente; **los dos primeros momentos** de voltaje y corriente; distribución | **Es el antecedente directo del segundo orden.** Usa momentos; B4 muestra que corregir con media y varianza no basta al 0,27 % (falla en 15 de 25 celdas de PEGASE). Distribución, una red práctica | R |
-| "Probabilistic power flow analysis using multidimensional holomorphic embedding and generalized cumulants" (2018), IEEE TPWRS, doi 10.1109/tpwrs.2018.2846203 | Solución AC analítica no lineal; cumulantes y Gram-Charlier; "mejores colas" | Otra vía a la no linealidad; IEEE 30; la cola sale de Gram-Charlier, que B8 sugiere poco fiable lejos en la cola | R |
-| "Second order exponential asymptotic expansion for probabilistic load flow analysis" (2026), IJEPES, doi 10.1016/j.ijepes.2026.111582 | Expansión de segundo orden, costo independiente del número de variables, CDF sin integrar | Distribuciones, no cotas de cobertura; IEEE 14 y 118 | R |
+| Sandoval, Gong, Chung (2022), "Three-phase second-order analytic probabilistic load flow with voltage-dependent load", IEEE TPWRS, doi 10.1109/tpwrs.2022.3159392 | Modelo cuadrático exacto por inyección de corriente; **los dos primeros momentos** de voltaje y corriente; distribución | **Es el antecedente directo del segundo orden.** Usa momentos; B4 muestra que corregir con media y varianza no basta al 0,27 % (falla en 15 de 25 celdas de PEGASE). Distribución, una red práctica | R |
+| Liu, Sun, Wang, Ju (2018), "Probabilistic power flow analysis using multidimensional holomorphic embedding and generalized cumulants", IEEE TPWRS, doi 10.1109/tpwrs.2018.2846203 | Solución AC analítica no lineal; cumulantes y Gram-Charlier; "mejores colas" | Otra vía a la no linealidad; IEEE 30; la cola sale de Gram-Charlier, que B8 sugiere poco fiable lejos en la cola | R |
+| Basirat, Mohammadi, Keihan Asl (2026), "Second order exponential asymptotic expansion for probabilistic load flow analysis", IJEPES, doi 10.1016/j.ijepes.2026.111582 | Expansión de segundo orden, costo independiente del número de variables, CDF sin integrar | Distribuciones, no cotas de cobertura; IEEE 14 y 118 | R |
 | Roald y Andersson (2019), IEEE TPWRS (quinta pasada) | Linealización en el punto AC, cuantil gaussiano, márgenes por Monte Carlo iterando | Primer orden; el error de linealización se corrige con Monte Carlo AC, no con el modelo cuadrático | TC |
 | "Convex relaxations and approximations of chance-constrained AC-OPF problems" (2019), IEEE TPWRS | Ajustes por Taylor de primer orden | Primer orden | R |
 | "Asymptotically tight conic approximations for chance-constrained AC OPF" (2022), EJOR, doi 10.1016/j.ejor.2022.06.020 | Aproximación cónica de restricciones de azar bilaterales | Optimización; sin resumen en OpenAlex | Ficha |
 | "Sequential convex approximation approach for CC-ACOPF under arbitrary random distribution" (2026), IEEE TPWRS, doi 10.1109/tpwrs.2026.3670499 | Restricciones de azar con distribuciones arbitrarias, polinomios de Bernstein (no la desigualdad) | Optimización y muestreo; "Bernstein" es otra cosa | R |
 | "Nonparametric probabilistic load flow with saddle point approximation" (2017), IEEE TSG | Punto de silla para las colas | Lineal; colas aproximadas, sin garantía | Ficha |
 | "Risk assessment of rare events in probabilistic power flow via hybrid multi-surrogate method" (2019), IEEE TSG, doi 10.1109/tsg.2019.2940928 | Caos polinomial más reevaluación AC de las colas | Muestreo con el modelo completo en la cola; costo mayor | R |
-| "A modified point estimate-based probabilistic load flow approach for improving tail accuracy" (2025), EPSR, doi 10.1016/j.epsr.2025.111606 | Estimación por puntos modificada para las colas | **Hay que leerlo**: es el intento más reciente de arreglar la cola de la estimación por puntos | Ficha |
+| Singh, Moger, Jena (2025), "A modified point estimate-based probabilistic load flow approach for improving tail accuracy", EPSR, doi 10.1016/j.epsr.2025.111606 | Estimación por puntos modificada para las colas | **Hay que leerlo**: es el intento más reciente de arreglar la cola de la estimación por puntos | Ficha |
 | "Safety screening for voltage control in active distribution grids via distributionally robust conformal screening" (2026), arXiv | Cobertura por predicción conforme | Basado en muestras; distribución | Ficha |
 | "Probabilistic interval power flow ... correlation of distributed wind power" (2024), IJEPES, doi 10.1016/j.ijepes.2024.109827 | Aritmética afín más teoría de la evidencia; correlación con paralelogramo, polígono o elipse | Correlación como restricción geométrica; distribución | R |
 
@@ -516,9 +516,13 @@ de 1985) y su búsqueda por texto es menos fina.
 
 1. TPWRS 2022, segundo orden analítico: qué cuantiles reporta y en qué red.
 2. EPSR 2025, estimación por puntos para las colas.
-3. Brucoli et al. (1985): ver qué momentos usa (está tras muro de pago).
+3. Brucoli, Torelli y Napoli (1985): ver qué momentos usa (está tras muro de pago).
 4. IJEPES 2026, expansión asintótica de segundo orden.
 5. TPWRS 2018, holomorphic embedding con cumulantes: si mide el error en la cola.
+
+Acceso: los de 2022 (TPWRS), 2018 (TPWRS) y 1985 (IJEPES) no tienen versión abierta. Los de IJEPES 2026 y EPSR 2025
+figuran como abiertos en OpenAlex, pero ScienceDirect y SSRN rechazan la descarga automática (HTTP 403); hay que
+bajarlos a mano.
 
 **Lo que sigue haciendo falta de los autores:** una búsqueda en IEEE Xplore o Scopus con acceso a texto completo.
 Consultas sugeridas: ("second-order" OR quadratic) AND ("probabilistic power flow" OR "probabilistic load flow")
