@@ -78,3 +78,15 @@ def test_factor_model_correlation_support_and_rewrite():
     z, h = rng.uniform(-1, 1, (2, 7)), rng.uniform(-1, 1, (5, 7))
     np.testing.assert_allclose(C @ (fm.w * z[zone] + (1 - fm.w) * h), fm.coefficients(C) @ np.vstack([z, h]), atol=1e-14)
     assert np.all(affine_radius(fm.coefficients(C)) <= affine_radius(C) + 1e-14)
+
+
+def test_order_statistic_bound_of_the_sampled_range():
+    from cdhim.affine_forms import certified_split
+    rng = np.random.default_rng(5)
+    n, trials = 50, 200000
+    q = rng.exponential(size=(trials, n + 1))                    # any continuous law
+    p = np.mean(q[:, -1] > q[:, :-1].max(axis=1))
+    assert p == pytest.approx(1.0 / (n + 1), abs=4 * np.sqrt(p / trials))
+    assert certified_split(0.0027, 4000) == pytest.approx(0.0027 - 2 / 4001)
+    with pytest.raises(ValueError):
+        certified_split(0.0027, 500)

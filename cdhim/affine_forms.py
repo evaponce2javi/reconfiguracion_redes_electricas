@@ -204,3 +204,26 @@ def quadratic_ranges(so: SecondOrder, Ws: dict, n: int, seed: int, batch: int = 
             np.minimum(out[k][0], v.min(axis=1), out=out[k][0])
             np.maximum(out[k][1], v.max(axis=1), out=out[k][1])
     return out
+
+
+# ----------------------------------------------------------------------------- probability guarantee
+def certified_split(alpha: float, n_samples: int) -> float:
+    """Level left for the linear part when the range of the quadratic term comes from ``n_samples`` samples.
+
+    For a target Y = L + Q of the second-order model, with the bound [-r + min(0, q_min), r + max(0, q_max)] and
+    q_min, q_max the extremes of n independent samples of Q drawn from the law of the symbols,
+        P(Y outside) <= P(|L| > r) + P(Q > q_max) + P(Q < q_min) <= alpha_L + 2 / (n + 1),
+    because a new exchangeable sample exceeds the maximum (or falls below the minimum) of n others with
+    probability at most 1 / (n + 1), whatever its distribution (order statistics; the probability is over both
+    the new draw and the n samples). So alpha_L = alpha - 2 / (n + 1) gives P(Y outside) <= alpha for the
+    second-order model; the third and higher orders are not covered by this argument.
+    """
+    a = alpha - 2.0 / (n_samples + 1)
+    if a <= 0:
+        raise ValueError(f"{n_samples} samples cannot certify level {alpha}: need more than {2 / alpha - 1:.0f}")
+    return a
+
+
+def certified_bernstein(Ct: np.ndarray, alpha: float, n_samples: int, var_eps: float = VAR_UNIFORM) -> np.ndarray:
+    """Bernstein radius at the level that, with the sampled range of the quadratic term, certifies ``alpha``."""
+    return bernstein_radius(Ct, certified_split(alpha, n_samples), var_eps)
