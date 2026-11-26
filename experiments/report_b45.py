@@ -248,12 +248,91 @@ def t_b7_grid(h):
                                         ("w", "Ancho / caja afín, mediana de las celdas", ".2f"), ("nc", "Máx. muestras AC sin converger en una celda", "d")])
 
 
+_METH = {"bern": "Bernstein + rango de q", "sig3": "3σ + rango de q", "cumulant_cf": "cumulantes + Cornish-Fisher",
+         "pem_cf": "estimación por puntos (Hong 2m+1, AC) + Cornish-Fisher", "affine": "caja afín + rango de q",
+         "bern_linear_only": "Bernstein sin el rango de q"}
+_LVL = {"design": "diseño", "stress_delta": "carga 1,2, δ = 30 %", "near_limit": "95 % del límite, δ = 15 %"}
+
+
+def t_b8(h):
+    d = _csv(h, "b8_ppf_baselines")
+    d = d[d.target == "bus"].copy()
+    d["sys"] = d.case.map(_CASES)
+    d["cell"] = d.load_level.map(_LVL)
+    d["m"] = d.method.map(_METH)
+    d["o"] = d.case.map(list(_CASES).index)
+    d["mo"] = d.method.map(list(_METH).index)
+    d = d.sort_values(["o", "load_factor", "mo"], kind="stable")
+    return h.table(d, [("sys", "Sistema", None), ("cell", "Celda", None), ("m", "Método", None), ("max_pct", "Peor barra (%)", ".3f"),
+                       ("n_over_alpha", "Barras sobre 0,27 %", "d"), ("any_target_pct", "Muestras con alguna barra fuera (%)", ".2f"),
+                       ("width_over_bern_median", "Ancho / Bernstein, mediana", ".2f"), ("n_ac_solves", "Flujos AC del método", "d"),
+                       ("t_method_s", "Tiempo del método (s)", ".2f"), ("n_ac_not_converged", "AC sin converger (de 20.000)", "d")])
+
+
+def t_b9(h):
+    d = _csv(h, "b9_branch_currents").copy()
+    d["sys"] = d.case.map(_CASES)
+    d["cell"] = d.load_level.map(_LVL)
+    d["m"] = d.method.map(_METH)
+    d["o"] = d.case.map(list(_CASES).index)
+    d["mo"] = d.method.map(list(_METH).index)
+    d = d.sort_values(["o", "load_factor", "mo"], kind="stable")
+    return h.table(d, [("sys", "Sistema", None), ("cell", "Celda", None), ("n_branch_ends", "Extremos de rama", "d"), ("m", "Método", None),
+                       ("max_pct", "Peor extremo (%)", ".3f"), ("n_over_alpha", "Sobre 0,27 %", "d"),
+                       ("any_end_pct", "Muestras con alguno fuera (%)", ".2f"), ("width_over_bern_median", "Ancho / Bernstein, mediana", ".2f"),
+                       ("rel_halfwidth_median_pct", "Semiancho / |I₀|, mediana (%)", ".1f"),
+                       ("max_err_linear_pu", "Error máx. del modelo lineal (p.u.)", ".4f"),
+                       ("max_err_second_order_pu", "del estado de 2.º orden (p.u.)", ".5f")])
+
+
+_MARG = ["uniform", "triangular", "truncnorm_3s", "beta25_support", "beta52_support", "beta0505_ushape", "student_t3_trunc",
+         "lognormal_trunc", "beta25_var13", "beta25_paper", "student_t3", "lognormal"]
+_RAD10 = {"hoeffding": "Hoeffding", "bern_var13": "Bernstein, var 1/3", "bern_true_var": "Bernstein, var verdadera",
+          "sig3_true_var": "3σ, var verdadera", "affine": "caja afín"}
+
+
+def t_b10(h):
+    d = _csv(h, "b10_marginals")
+    d = d[d.target == "bus"]
+    rows = []
+    for (case, m), g in d.groupby(["case", "marginal"], sort=False):
+        g = g.set_index("radius")
+        row = {"sys": _CASES[case], "marg": m, "inm": "sí" if bool(g.in_model.iloc[0]) else "no", "var": g.eps_variance.iloc[0],
+               "o": list(_CASES).index(case), "mo": _MARG.index(m) if m in _MARG else 99}
+        for r in _RAD10:
+            row[r] = g.loc[r, "max_pct"]
+            row[r + "_n"] = g.loc[r, "n_over_alpha"]
+        rows.append(row)
+    df = pd.DataFrame(rows).sort_values(["o", "mo"])
+    cols = [("sys", "Sistema", None), ("marg", "Distribución (C3)", None), ("inm", "Media 0 y soporte en [−1, 1]", None), ("var", "Varianza", ".3f")]
+    for r, lab in _RAD10.items():
+        cols += [(r, f"{lab}: peor barra (%)", ".3f"), (r + "_n", "sobre 0,27 %", "d")]
+    return h.table(df, cols)
+
+
+def t_b5_n250(h):
+    d4, d2 = _csv(h, "b5_sweep"), _csv(h, "b5_sweep_n250")
+    rows = []
+    for tag, d in (("4.000", d4), ("250", d2)):
+        d = d[d.status == "ok"]
+        for s in ("ieee33", "pegase2869"):
+            g = d[d.system == s]
+            for tg in ("bus", "drop"):
+                rows.append({"n": tag, "sys": _sys(s), "tg": "barra" if tg == "bus" else "caída", "cells": len(g),
+                             "bad": int((g[f"ac_{tg}_bern_n_over"] > 0).sum()), "worst": g[f"ac_{tg}_bern_max_pct"].max(),
+                             "w": g[f"width_{tg}_bern_over_affine_median"].median()})
+    return h.table(pd.DataFrame(rows), [("n", "Muestras de q", None), ("sys", "Sistema", None), ("tg", "Objetivo", None), ("cells", "Celdas", "d"),
+                                        ("bad", "Celdas con alguno sobre 0,27 %", "d"), ("worst", "Peor violación (%)", ".3f"),
+                                        ("w", "Ancho / caja afín, mediana", ".3f")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
             "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
             "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop"),
-            "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h)}
+            "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h),
+            "b8": lambda: t_b8(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
