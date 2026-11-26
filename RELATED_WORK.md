@@ -406,3 +406,60 @@ prueba de ausencia: no hubo acceso a la búsqueda en texto completo de IEEE Xplo
 5. Messine y Touhami (2006) y Ninin, Messine y Hansen (2015), para ubicar el k-nomial.
 6. Luo, Shi y Ni (2018): qué es la aritmética afín "extendida".
 7. La Ref. [12], que sigue sin PDF.
+
+---
+
+## Quinta pasada: la capa probabilística (versión de formas afines, experimentos B4 y B5)
+
+Pregunta: ¿está publicado acotar |V| por barra y cantidades de rama con la forma afín de sensibilidades en el
+punto AC, un radio de concentración que no supone normalidad (Bernstein) y una corrección de segundo orden del
+error de linearización, validado contra AC a escala de transmisión? Búsqueda del 26-11-2026, no exhaustiva:
+nueve búsquedas web y dos artículos leídos completos. Niveles: **TC** texto completo, **R** solo resumen o
+fragmentos del buscador.
+
+| Trabajo | Qué hace | Distribución | Linearización | Mayor sistema / validación | Nivel |
+|---|---|---|---|---|---|
+| Roald y Andersson (2019), IEEE TPWRS 33(3), arXiv 1706.03241 | CC-AC-OPF: el punto previsto con AC completo; el efecto de la incertidumbre linealizado en ese punto. Restricciones de azar sobre **voltajes, corrientes de rama** y generación. Márgenes analíticos o por Monte Carlo, iterando | Gaussiana (Φ⁻¹); dicen que se puede cambiar por reformulaciones distribucionalmente robustas ([29] del artículo) | Primer orden. Escriben que "la imprecisión por la distribución es del mismo orden que la del error de linealización". No corrigen el segundo orden | Polaco 2.383 barras con 941 cargas inciertas; pruebas dentro y fuera de muestra | TC |
+| Lubin, Dvorkin y Roald (2019), IEEE TPWRS, arXiv 1803.08754 | CC-AC-OPF como SOCP; restricciones cuadráticas de azar para la potencia aparente | Gaussiana, extensible con DRO | Primer orden en el punto AC | IEEE 118 | TC |
+| Halilbasic, Pinson y Chatzivasileiadis (2019), IEEE TPWRS, arXiv 1804.05754 | Relajación SOC del CC-AC-OPF y ajustes por Taylor de primer orden; recuperación de factibilidad AC | — | Primer orden; reconocen el error de linealización como fuente de imprecisión | — | R |
+| Summers et al. (2016), NAPS | Regulación de voltaje con restricciones de azar tipo Chebyshev desde media y covarianza estimadas en línea | Sin distribución (solo momentos) | Flujo AC linealizado | Distribución | R (el PDF redirige a otro sitio) |
+| Li, Jiang y Mathieu (2019), IEEE TCNS, arXiv 1811.10217 | OPF distribucionalmente robusto con momentos y unimodalidad | DRO, menos conservador que Chebyshev | — | — | R |
+| Talkington et al. (2025), arXiv 2510.17798 | Desigualdades de concentración matriciales (Bernstein matricial) para el espectro de la admitancia con **parámetros de red** inciertos; errores de DC y LinDistFlow | Concentración | No es incertidumbre de inyección | Redes IEEE | R |
+| Bouissou, Goubault, Putot et al. (2016), TACAS | Formas afines probabilísticas con desigualdades de concentración (ya en la primera pasada) | Concentración | — | Sin aplicación a sistemas de potencia | R |
+| Pirnia, Cañizares, Bhattacharya, Vaccaro (2012-2014) | Flujo de potencia y OPF con aritmética afín frente a Monte Carlo: cotas algo más anchas que el rango de MC, sin suponer distribución | Ninguna (peor caso) | Aritmética afín | 1.211 barras | R |
+| Nemirovski y Shapiro (2006), SIAM J. Optim. | "Aproximación de Bernstein" de restricciones de azar, convexa | Concentración (cotas de la función generadora de momentos) | — | No es de sistemas de potencia; no encontré quién la aplique a OPF | R |
+| Flujo probabilístico por cumulantes (Usaola 2009 y otros) | Momentos de salida desde la linealización y expansión de Gram-Charlier o Cornish-Fisher | Reconstruye la distribución | Primer orden; la linealización se nombra como su principal limitación | — | R |
+| PPF acelerado, arXiv 2010.14995 | Las ecuaciones son cuadráticas en coordenadas cartesianas: el desarrollo de segundo orden es exacto ahí | — | Hessiana constante en un modelo reducido | Distribución | R |
+
+### Qué ya está publicado
+
+- **Linealizar en el punto AC y acotar voltajes y corrientes de rama con un cuantil analítico** es la reformulación
+  analítica de Roald y Andersson. El "3σ" de este repositorio es esa misma reformulación gaussiana. Ellos ya
+  señalan que el error por la distribución y el de linealización son del mismo orden.
+- **Reformulaciones sin suponer distribución** con momentos (Chebyshev, Cantelli, DRO, unimodalidad) son
+  corrientes en CC-OPF.
+- **Concentración sobre formas afines** está publicada en análisis de programas (Bouissou et al., 2016).
+- **El peor caso con aritmética afín** frente a Monte Carlo está publicado (Pirnia, Vaccaro).
+
+### Qué no apareció
+
+1. **Corrección de segundo orden del error de linealización en cotas probabilísticas de voltaje a escala de
+   transmisión**, usando el rango del término cuadrático (asimétrico y de cola pesada, que un ajuste de media y
+   varianza no captura: B4) en vez de iterar con Monte Carlo AC.
+2. **Bernstein (soporte acotado más varianza) sobre la forma afín de |V|** como radio sin suponer distribución.
+   Es una desigualdad de libro y la idea está en Bouissou; lo nuevo sería la aplicación y su medición frente a
+   Chebyshev y Gauss.
+3. **Caídas de voltaje por rama desde la forma afín de la diferencia**, y cuánto ganan frente a restar
+   intervalos (B5: 4 a 21 veces). Roald y Andersson sí acotan corrientes de rama con la forma lineal, así que la
+   idea general de cantidades de rama no es nueva: lo medible es la ganancia y la validación.
+4. **Medición de que la caja de peor caso de segundo orden no encierra la solución AC en los vértices** de una red
+   de 2.869 barras (B5). Ya estaba anotado en las secciones 17 y 18 de RESULTS.md para el primer orden.
+
+### Lo que falta para cerrar esta pasada
+
+- Leer completo Roald, Oldewurtel, Van Parys y Andersson (2015), con DRO, y la referencia [29] de Roald y
+  Andersson. Son la comparación natural para el radio sin distribución: hay que medir Bernstein frente a Cantelli
+  (que solo usa la varianza) en los mismos casos.
+- Buscar en IEEE Xplore o Scopus "second-order" junto con "chance constraint" y "voltage", y flujo probabilístico
+  con Hessiana a escala de transmisión. El buscador web no basta para descartar.
+- Leer Summers et al. (2016) completo.
