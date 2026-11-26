@@ -1,0 +1,17 @@
+{
+  "table": "b5_vertex",
+  "script": "b5_affine_forms.py",
+  "generated_utc": "2026-11-26T13:38:56+00:00",
+  "git_commit": "2bb707b",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "n_samples": 20000,
+  "n_surrogate": 4000,
+  "alpha": 0.0027000000000000357,
+  "note": "search row of b5_width: ratio_p10 = share of targets where the search flipped any symbol, ratio_median = median model gain of the search over the affine radius, ratio_p90 = its maximum"
+}
