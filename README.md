@@ -40,6 +40,9 @@ python experiments/run_all.py b4 b5          # corrección de segundo orden (B4:
 python experiments/b5_affine_forms.py sweep  # B5: barrido carga x delta (unas 2 h); también: surrogate, radii
 python experiments/b6_correlated.py          # B6: fuentes correlacionadas como símbolos compartidos (unos 30 min)
 python experiments/b7_generality.py          # B7: cobertura simultánea e IEEE-118 / PEGASE-1354 (unas 2 h)
+python experiments/b8_ppf_baselines.py       # B8: cumulantes y estimación por puntos (unos 40 min)
+python experiments/b9_branch_currents.py     # B9: corrientes de rama (unos 40 min)
+python experiments/b10_marginals.py          # B10: distribuciones no uniformes (unos 30 min)
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```

@@ -225,6 +225,72 @@ como en C1*
   ninguna celda. Cerca del límite de cargabilidad con δ alto no converge hasta el <<B7_NC_MAX>> % de las muestras AC; esas
   celdas hay que leerlas con la advertencia de C1.
 
+### 28.8 Frente a métodos publicados de flujo probabilístico (B8)
+
+**Métodos.** (a) El método de cumulantes sobre el modelo lineal, con la expansión de Cornish-Fisher de cuarto orden
+para los cuantiles α/2 y 1 − α/2. (b) La estimación por puntos de Hong (2m+1) sobre el flujo AC exacto: dos flujos por
+fuente, en ε_k = ±0,775. Los cumulantes del aporte de cada fuente se suman, como corresponde a fuentes independientes;
+la suma de momentos crudos del esquema básico pierde los términos cruzados del cuarto momento cuando hay miles de
+fuentes. Ambos con Cornish-Fisher. Mismas celdas para los cuatro sistemas: diseño, carga 1,2 con δ = 30 %, y 95 % del
+límite de cargabilidad con δ = 15 %. 20.000 muestras AC por celda.
+
+{{b8}}
+
+*Script: `experiments/b8_ppf_baselines.py` · CSV: `results/b8_ppf_baselines.csv`. Las caídas por rama están en el CSV.*
+
+- **Los dos métodos publicados no cubren.** La peor barra queda fuera hasta el <<B8_CUM_MAX>> % (cumulantes) y el
+  <<B8_PEM_MAX>> % (estimación por puntos) de las muestras; en el punto de diseño de PEGASE-2869, <<B8_CUM_N>> y <<B8_PEM_N>>
+  de sus <<B8_NB>> barras superan el 0,27 %. Sus intervalos miden alrededor de <<B8_W>> veces los de Bernstein.
+- La estimación por puntos usa el flujo AC exacto, pero fuente por fuente: no ve las interacciones entre fuentes,
+  que son las que el término cuadrático recoge. Cuesta <<B8_PEM_SOLVES>> flujos AC (<<B8_PEM_T>> s) en PEGASE-2869.
+- Bernstein con el rango de q no supera el nominal en ninguna barra de ninguna celda (peor <<B8_BERN_MAX>> %).
+
+### 28.9 Corrientes de rama (B9)
+
+**Por qué.** En transmisión lo que se vigila en una rama es su carga, es decir, la corriente. La corriente en cada
+extremo es I = Y_f V (o Y_t V). Su forma afín sale del voltaje complejo de primer orden, d|I| = Re(conj(I₀)/|I₀| ·
+Y_f E) ε. El resto no lineal se muestrea sobre el estado complejo de segundo orden ΔV₁ + ΔV₂, con
+ΔV₂ = −J⁻¹q(ΔV₁) (`SecondOrder.state`), y su rango se suma como en las barras. Ambos extremos de todas las ramas en
+servicio con |I₀| > 10⁻⁶ p.u.
+
+{{b9}}
+
+*Script: `experiments/b9_branch_currents.py` · CSV: `results/b9_branch_currents.csv`*
+
+- **Aquí la corrección es imprescindible.** El módulo |I| es muy no lineal cerca de corriente cero y en ramas con
+  cambios grandes: el error del modelo lineal llega a <<B9_ERRLIN>> p.u. Sin el rango del término no lineal, Bernstein
+  deja fuera hasta el <<B9_LIN_MAX>> % de las muestras; cumulantes y estimación por puntos, hasta el <<B9_CUM_MAX>> %.
+- **Con el rango, Bernstein cubre en todas las celdas** (peor extremo <<B9_BERN_MAX>> %).
+- En las corrientes la concentración sí rinde frente al peor caso: en PEGASE-2869 la caja afín corregida mide
+  <<B9_AFF_W>> veces el intervalo de Bernstein en mediana.
+
+### 28.10 Distribuciones no uniformes (B10)
+
+Las doce distribuciones de C3, en el punto de diseño de tres sistemas. Hoeffding supone solo media cero y soporte en
+[−1, 1]; Bernstein además una cota de la varianza (1/3 por defecto, o la verdadera); 3σ, normalidad. El rango de q se
+muestrea con la distribución verdadera.
+
+{{b10}}
+
+*Script: `experiments/b10_marginals.py` · CSV: `results/b10_marginals.csv` · barras; las caídas están en el CSV*
+
+- **Con media cero y soporte en [−1, 1], los tres radios sin distribución cubren** (peor barra <<B10_IN_MAX>> %), incluida
+  la distribución en forma de U, cuya varianza 1/2 supera el 1/3 que supone Bernstein por defecto (<<B10_U_MAX>> %).
+  3σ falla con casi todas (hasta <<B10_S3_MAX>> %).
+- **Fuera del soporte, nada cubre**, ni siquiera la caja afín (hasta <<B10_OUT_MAX>> % en PEGASE-2869). El soporte
+  acotado es el supuesto que sostiene al método: δ tiene que ser el semiancho real de cada inyección, no una
+  desviación típica.
+
+### 28.11 El barrido con 250 muestras del término cuadrático
+
+{{b5_n250}}
+
+*Script: `experiments/b5_affine_forms.py` (modo `sweep250`) · CSV: `results/b5_sweep_n250.csv`, `results/b5_sweep.csv`*
+
+Con 250 muestras ninguna celda supera el nominal, pero la peor barra de PEGASE sube a <<B5_N250_MAX>> %, cerca del límite.
+La cola del rango queda subestimada en las celdas más exigentes. Se recomienda 1.000 muestras, que cuestan alrededor
+de un segundo en PEGASE-2869 (28.5).
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -236,13 +302,16 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 1 | Las formas afines de |V| se obtienen de una factorización LU dispersa en el punto AC y escalan a 9.241 barras | C7, `results/c7_timing.csv` | El bloque de sensibilidades es denso: el método completo escala como N^1,5, no N^1,2 |
 | 2 | El error de linealización es lo único que separa las cotas del 0,27 % nominal en el punto de diseño | B1 y 27.1 (columnas lineal y AC) | En la peor barra de PEGASE |
 | 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda), en dos sistemas; el rango es muestreado, no acotado |
-| 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
+| 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Caídas de magnitud de voltaje |
+| 4b | Las corrientes de rama se acotan con la misma construcción; ahí el rango del término no lineal es imprescindible | 28.9 | Validado en las tres celdas de B8 de cada sistema |
+| 4c | Los métodos publicados de flujo probabilístico (cumulantes, estimación por puntos) no cubren a este nivel, ni en barras ni en corrientes | 28.8, 28.9 | Con Cornish-Fisher; otras expansiones (Gram-Charlier) no se probaron |
+| 4d | El método cubre con cualquier distribución de media cero y soporte en [−1, 1]; fuera de ese soporte no | 28.10 | δ debe ser el semiancho real de las inyecciones |
 | 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1] |
 | 5b | Fuentes correlacionadas: escritas como símbolos compartidos, el mismo método cubre; suponer independencia o un modelo mal especificado no | 28.6 | La ganancia sobre el peor caso cae con un factor común fuerte; la estructura de correlación es un supuesto del modelo; con la slack sola y correlación fuerte falla la linealización en PEGASE |
 | 6 | 3σ, la reformulación gaussiana habitual, no cubre por objetivo aun corregida | 27.2, 28.3, 28.7 | Con Bonferroni sí cubre en la práctica, sin garantía |
 | 6b | La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso; la ventaja de la concentración es por objetivo y depende del número de fuentes por barra | 28.7 | En IEEE-118 la concentración no aporta |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
-| 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
+| 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; con 1.000 muestras de q, en vez de 250, algo menos (28.11) |
 
 Lo que este informe no respalda todavía: una garantía simultánea más angosta que el peor caso, correlación estimada de datos
 reales de carga y generación, la corrección en otros sistemas con el barrido completo de C1 (B7 usa una grilla de 12 celdas), y una revisión

@@ -399,7 +399,34 @@ def values(h):
                                          & (grid7.radius == "gauss")].n_over_alpha > 0).sum()), "d"),
         "B7_NC_MAX": n(100 * grid7.n_ac_not_converged.max() / grid7.n_samples.max(), ".0f"),
     }
-    return {**b6v, **b7v,
+    b8 = _csv(h, "b8_ppf_baselines")
+    b8b = b8[b8.target == "bus"]
+    b9 = _csv(h, "b9_branch_currents")
+    b10 = _csv(h, "b10_marginals")
+    b10b = b10[b10.target == "bus"]
+    n250 = _csv(h, "b5_sweep_n250")
+    n250 = n250[n250.status == "ok"]
+    p8 = b8b[(b8b.case == P) & (b8b.load_level == "design")].set_index("method")
+    b8v = {
+        "B8_BERN_MAX": n(b8b[b8b.method == "bern"].max_pct.max(), ".2f"),
+        "B8_CUM_MAX": n(b8b[b8b.method == "cumulant_cf"].max_pct.max(), ".1f"),
+        "B8_PEM_MAX": n(b8b[b8b.method == "pem_cf"].max_pct.max(), ".1f"),
+        "B8_CUM_N": n(p8.loc["cumulant_cf", "n_over_alpha"], "d"), "B8_PEM_N": n(p8.loc["pem_cf", "n_over_alpha"], "d"),
+        "B8_NB": n(int(dz[(dz.case == P) & (dz.target == "bus") & (dz.level == "per_target") & (dz.radius == "bernstein")].n_bus_targets.iloc[0]), "d"),
+        "B8_W": n(b8b[b8b.method.isin(["cumulant_cf", "pem_cf"])].width_over_bern_median.median(), ".2f"),
+        "B8_PEM_SOLVES": n(p8.loc["pem_cf", "n_ac_solves"], "d"), "B8_PEM_T": n(p8.loc["pem_cf", "t_method_s"], ".0f"),
+        "B9_BERN_MAX": n(b9[b9.method == "bern"].max_pct.max(), ".2f"),
+        "B9_LIN_MAX": n(b9[b9.method == "bern_linear_only"].max_pct.max(), ".0f"),
+        "B9_CUM_MAX": n(b9[b9.method.isin(["cumulant_cf", "pem_cf"])].max_pct.max(), ".0f"),
+        "B9_ERRLIN": n(b9.max_err_linear_pu.max(), ".1f"),
+        "B9_AFF_W": n(b9[(b9.case == P) & (b9.method == "affine")].width_over_bern_median.median(), ".2f"),
+        "B10_IN_MAX": n(b10b[b10b.in_model & b10b.radius.isin(["hoeffding", "bern_var13", "bern_true_var"])].max_pct.max(), ".3f"),
+        "B10_U_MAX": n(b10b[(b10b.marginal == "beta0505_ushape") & (b10b.radius == "bern_var13")].max_pct.max(), ".3f"),
+        "B10_OUT_MAX": n(b10b[~b10b.in_model & (b10b.radius == "affine")].max_pct.max(), ".1f"),
+        "B10_S3_MAX": n(b10b[b10b.in_model & (b10b.radius == "sig3_true_var")].max_pct.max(), ".1f"),
+        "B5_N250_MAX": n(n250.ac_bus_bern_max_pct.max(), ".3f"),
+    }
+    return {**b6v, **b7v, **b8v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),
         "B4_ELL_0": n(pr.loc["none", "max_pct"], ".2f"), "B4_ELL_0N": n(pr.loc["none", "n_branches_over_0.27pct"], "d"),

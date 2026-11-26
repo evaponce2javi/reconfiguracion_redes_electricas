@@ -1,0 +1,17 @@
+{
+  "table": "b10_marginals",
+  "script": "b10_marginals.py",
+  "generated_utc": "2026-11-26T17:05:42+00:00",
+  "git_commit": "8a59507",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "n_samples": 20000,
+  "alpha": 0.0027000000000000357,
+  "n_surrogate": 1000,
+  "note": "marginals of C3 (cdhim.marginal_catalogue); ranges of q sampled under the true marginal"
+}
