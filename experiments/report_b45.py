@@ -183,10 +183,40 @@ def t_b5_radii(h):
                          ("max_pct_second_order", "con el rango de q (%)", ".3f"), ("n_over_alpha_second_order", "sobre 0,27 %", "d")])
 
 
+_B6_NAMES = {"independent": "independientes", "global_rho0.155": "factor global, ρ = 0,155", "global_rho0.5": "factor global, ρ = 0,5",
+             "global_rho0.845": "factor global, ρ = 0,845", "zones_rho0.155": "8 zonas, ρ = 0,155", "zones_rho0.5": "8 zonas, ρ = 0,5",
+             "zones_rho0.845": "8 zonas, ρ = 0,845", "copula_r0.3": "cópula de C2, r = 0,3", "copula_r0.6": "cópula de C2, r = 0,6",
+             "copula_r0.9": "cópula de C2, r = 0,9"}
+
+
+def t_b6(h, target):
+    d = _csv(h, "b6_correlated")
+    d = d[d.target == target]
+    rows = []
+    for (s, model, bal), g in d.groupby(["system", "model", "balancing"], sort=False):
+        g = g.set_index("bound")
+        own = "bern_model" if "bern_model" in g.index else "bern_matched_factor"
+        rows.append({"sys": _sys(s), "model": _B6_NAMES[model], "bal": "slack" if bal == "slack" else "generadores",
+                     "ind": g.loc["bern_independent", "max_pct"], "own": g.loc[own, "max_pct"], "ownn": g.loc[own, "n_over_alpha"],
+                     "w": g.loc[own, "width_over_affine_median"], "s3": g.loc["sig3_true", "max_pct"],
+                     "aff": g.loc["affine", "max_pct"], "nc": g.loc["affine", "n_ac_not_converged"]})
+    order = list(_B6_NAMES.values())
+    df = pd.DataFrame(rows)
+    df["o"] = df.model.map(order.index)
+    df = df.sort_values(["sys", "o", "bal"], kind="stable")
+    return h.table(df, [("sys", "Sistema", None), ("model", "Correlación de las fuentes", None), ("bal", "Balance", None),
+                        ("ind", "Bernstein suponiendo independencia: violación máx. (%)", ".3f"),
+                        ("own", "Bernstein con el modelo de factores (cópula: factor con el mismo ρ): violación máx. (%)", ".3f"),
+                        ("ownn", "sobre 0,27 %", "d"), ("w", "su ancho / caja afín, mediana", ".2f"),
+                        ("s3", "3σ con la Σ_ε verdadera: violación máx. (%)", ".3f"),
+                        ("aff", "Caja afín (peor caso lineal): violación máx. (%)", ".3f"), ("nc", "AC sin converger", "d")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
-            "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h)}
+            "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
+            "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop")}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
@@ -216,7 +246,23 @@ def values(h):
     t_method = float(sp.t_study_s.iloc[0] + sp.t_run_and_second_order_s.iloc[0] + sp[sp.n_surrogate == 250].t_range_s.mean())
     t_mc = float(c8.loc["pegase2869", "ac_mc_batched_s"])
     drop_ratio = lambda k: get(pw, target="drop", bound=k, relative_to="bern").ratio_median
-    return {
+    b6 = _csv(h, "b6_correlated")
+    p6 = b6[(b6.system == "pegase2869") & (b6.target == "bus")]
+    fac = p6[p6.model.str.startswith(("global", "zones"))]
+    cop = p6[p6.model.str.startswith("copula")]
+    b6v = {
+        "B6_IND_MIN": n(fac[fac.bound == "bern_independent"].max_pct.min(), ".1f"),
+        "B6_IND_MAX": n(p6[p6.bound == "bern_independent"].max_pct.max(), ".0f"),
+        "B6_FAC_MAX": n(fac[fac.bound == "bern_model"].max_pct.max(), ".3f"),
+        "B6_FAC_WMIN": n(fac[fac.bound == "bern_model"].width_over_affine_median.min(), ".2f"),
+        "B6_FAC_WMAX": n(fac[fac.bound == "bern_model"].width_over_affine_median.max(), ".2f"),
+        "B6_IND_W": n(p6[(p6.model == "independent") & (p6.bound == "bern_model")].width_over_affine_median.max(), ".2f"),
+        "B6_COP_MATCH": n(cop[cop.bound == "bern_matched_factor"].max_pct.max(), ".1f"),
+        "B6_COP_AFF_SLACK": n(cop[(cop.bound == "affine") & (cop.balancing == "slack")].max_pct.max(), ".2f"),
+        "B6_COP_AFF_PART": n(cop[(cop.bound == "affine") & (cop.balancing == "participation")].max_pct.max(), ".3f"),
+        "B6_COP_S3": n(cop[cop.bound == "sig3_true"].max_pct.max(), ".2f"),
+    }
+    return {**b6v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),
         "B4_ELL_0": n(pr.loc["none", "max_pct"], ".2f"), "B4_ELL_0N": n(pr.loc["none", "n_branches_over_0.27pct"], "d"),

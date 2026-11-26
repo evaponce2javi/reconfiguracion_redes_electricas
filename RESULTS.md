@@ -3111,6 +3111,127 @@ método completo en PEGASE (estudio lineal, modelo de segundo orden y 250 muestr
 las 250 están probadas solo en el punto de diseño. El muestreo necesita doble precisión: q es una suma de términos
 grandes que casi se cancelan.
 
+### 28.6 Fuentes correlacionadas (B6)
+
+**Cómo se modela.** A la manera de la aritmética afín, con símbolos compartidos: cada fuente es
+ε_k = w·ζ_z(k) + (1 − w)·η_k, con un factor ζ por zona (o uno global) y un ruido propio η_k, todos independientes
+y uniformes en [−1, 1] (`FactorModel`). El soporte de ε_k sigue en [−1, 1]; la correlación entre dos fuentes de
+la misma zona es w²/(w² + (1 − w)²), y su varianza baja (1/6 con ρ = 0,5). La forma afín reescrita sobre los
+símbolos independientes admite Bernstein sin cambios, y el rango de q se muestrea con la misma ley. La cópula
+gaussiana de C2 no se puede escribir así: para ella se prueba un modelo de un factor global con la misma
+correlación de Pearson. Balance con la slack sola o con los generadores en partes fijas (`participation_factors`).
+Punto de diseño, 20.000 muestras AC por caso, 1.000 muestras de q.
+
+**Barras**
+
+| Sistema | Correlación de las fuentes | Balance | Bernstein suponiendo independencia: violación máx. (%) | Bernstein con el modelo de factores (cópula: factor con el mismo ρ): violación máx. (%) | sobre 0,27 % | su ancho / caja afín, mediana | 3σ con la Σ_ε verdadera: violación máx. (%) | Caja afín (peor caso lineal): violación máx. (%) | AC sin converger |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | independientes | generadores | 0,000 | 0,000 | 0 | 0,70 | 0,200 | 0,000 | 0 |
+| IEEE-33 | independientes | slack | 0,000 | 0,000 | 0 | 0,70 | 0,290 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,155 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,005 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,155 | slack | 0,000 | 0,000 | 0 | 1,00 | 0,005 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,5 | generadores | 0,645 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,5 | slack | 0,625 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,845 | generadores | 19,415 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,845 | slack | 20,125 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,155 | generadores | 0,000 | 0,000 | 0 | 0,60 | 0,225 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,155 | slack | 0,000 | 0,000 | 0 | 0,59 | 0,255 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,5 | generadores | 0,000 | 0,000 | 0 | 0,83 | 0,200 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,5 | slack | 0,000 | 0,000 | 0 | 0,83 | 0,160 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,845 | generadores | 0,005 | 0,000 | 0 | 1,00 | 0,160 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,845 | slack | 0,005 | 0,000 | 0 | 1,00 | 0,125 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,3 | generadores | 7,795 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,3 | slack | 7,325 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,6 | generadores | 24,715 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,6 | slack | 24,405 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,9 | generadores | 39,345 | 0,015 | 0 | 1,01 | 0,000 | 0,015 | 0 |
+| IEEE-33 | cópula de C2, r = 0,9 | slack | 39,740 | 0,015 | 0 | 1,01 | 0,000 | 0,015 | 0 |
+| PEGASE-2869 | independientes | generadores | 0,005 | 0,005 | 0 | 0,52 | 0,310 | 0,000 | 0 |
+| PEGASE-2869 | independientes | slack | 0,015 | 0,015 | 0 | 0,54 | 0,295 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,155 | generadores | 65,590 | 0,005 | 0 | 0,92 | 0,260 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,155 | slack | 56,555 | 0,000 | 0 | 0,95 | 0,170 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,5 | generadores | 79,440 | 0,000 | 0 | 0,87 | 0,135 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,5 | slack | 68,985 | 0,000 | 0 | 0,92 | 0,110 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,845 | generadores | 85,415 | 0,000 | 0 | 0,82 | 0,075 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,845 | slack | 73,900 | 0,000 | 0 | 0,89 | 0,135 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,155 | generadores | 11,255 | 0,000 | 0 | 0,93 | 0,215 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,155 | slack | 10,540 | 0,000 | 0 | 0,94 | 0,185 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,5 | generadores | 39,540 | 0,000 | 0 | 0,92 | 0,180 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,5 | slack | 40,240 | 0,000 | 0 | 0,93 | 0,155 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,845 | generadores | 56,315 | 0,000 | 0 | 0,90 | 0,165 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,845 | slack | 57,000 | 0,000 | 0 | 0,92 | 0,080 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,3 | generadores | 74,895 | 3,310 | 4 | 0,90 | 0,165 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,3 | slack | 54,975 | 3,440 | 4 | 0,95 | 0,180 | 0,040 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,6 | generadores | 83,615 | 3,195 | 4 | 0,86 | 0,275 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,6 | slack | 67,670 | 3,015 | 25 | 0,93 | 0,380 | 0,425 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,9 | generadores | 88,505 | 0,635 | 1 | 0,81 | 0,540 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,9 | slack | 76,025 | 2,290 | 293 | 0,90 | 1,265 | 1,870 | 0 |
+
+**Caídas por rama**
+
+| Sistema | Correlación de las fuentes | Balance | Bernstein suponiendo independencia: violación máx. (%) | Bernstein con el modelo de factores (cópula: factor con el mismo ρ): violación máx. (%) | sobre 0,27 % | su ancho / caja afín, mediana | 3σ con la Σ_ε verdadera: violación máx. (%) | Caja afín (peor caso lineal): violación máx. (%) | AC sin converger |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| IEEE-33 | independientes | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,185 | 0,000 | 0 |
+| IEEE-33 | independientes | slack | 0,000 | 0,000 | 0 | 1,00 | 0,210 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,155 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,045 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,155 | slack | 0,000 | 0,000 | 0 | 1,00 | 0,055 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,5 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,5 | slack | 0,005 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,845 | generadores | 3,965 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | factor global, ρ = 0,845 | slack | 4,125 | 0,000 | 0 | 1,00 | 0,000 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,155 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,215 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,155 | slack | 0,000 | 0,000 | 0 | 1,00 | 0,180 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,5 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,125 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,5 | slack | 0,000 | 0,000 | 0 | 1,00 | 0,135 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,845 | generadores | 0,000 | 0,000 | 0 | 1,00 | 0,110 | 0,000 | 0 |
+| IEEE-33 | 8 zonas, ρ = 0,845 | slack | 0,000 | 0,000 | 0 | 1,00 | 0,085 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,3 | generadores | 2,665 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,3 | slack | 2,420 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,6 | generadores | 13,985 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,6 | slack | 13,760 | 0,000 | 0 | 1,01 | 0,000 | 0,000 | 0 |
+| IEEE-33 | cópula de C2, r = 0,9 | generadores | 27,895 | 0,025 | 0 | 1,01 | 0,000 | 0,025 | 0 |
+| IEEE-33 | cópula de C2, r = 0,9 | slack | 27,595 | 0,025 | 0 | 1,01 | 0,000 | 0,025 | 0 |
+| PEGASE-2869 | independientes | generadores | 0,005 | 0,005 | 0 | 0,78 | 0,310 | 0,000 | 0 |
+| PEGASE-2869 | independientes | slack | 0,000 | 0,000 | 0 | 0,80 | 0,300 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,155 | generadores | 36,135 | 0,005 | 0 | 0,85 | 0,305 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,155 | slack | 57,105 | 0,000 | 0 | 0,90 | 0,245 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,5 | generadores | 61,600 | 0,005 | 0 | 0,76 | 0,320 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,5 | slack | 69,395 | 0,000 | 0 | 0,83 | 0,215 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,845 | generadores | 72,790 | 0,000 | 0 | 0,66 | 0,240 | 0,000 | 0 |
+| PEGASE-2869 | factor global, ρ = 0,845 | slack | 74,330 | 0,000 | 0 | 0,77 | 0,205 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,155 | generadores | 9,255 | 0,000 | 0 | 0,83 | 0,290 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,155 | slack | 10,680 | 0,000 | 0 | 0,85 | 0,255 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,5 | generadores | 38,735 | 0,000 | 0 | 0,83 | 0,215 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,5 | slack | 39,340 | 0,000 | 0 | 0,85 | 0,245 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,845 | generadores | 55,785 | 0,000 | 0 | 0,80 | 0,185 | 0,000 | 0 |
+| PEGASE-2869 | 8 zonas, ρ = 0,845 | slack | 56,480 | 0,000 | 0 | 0,82 | 0,190 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,3 | generadores | 55,325 | 5,990 | 22 | 0,81 | 0,295 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,3 | slack | 55,815 | 5,870 | 24 | 0,89 | 0,290 | 0,030 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,6 | generadores | 69,535 | 5,930 | 28 | 0,74 | 0,465 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,6 | slack | 68,940 | 5,905 | 26 | 0,84 | 0,385 | 0,195 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,9 | generadores | 77,740 | 2,895 | 6 | 0,64 | 0,720 | 0,000 | 0 |
+| PEGASE-2869 | cópula de C2, r = 0,9 | slack | 77,020 | 2,890 | 226 | 0,77 | 0,820 | 1,090 | 0 |
+
+*Script: `experiments/b6_correlated.py` · CSV: `results/b6_correlated.csv` · semilla por caso en la columna `seed`*
+
+- **Suponer independencia con fuentes correlacionadas no sirve:** en PEGASE la peor barra queda fuera entre el
+  10,5 % y el 89 % de las muestras.
+- **Con la correlación escrita como símbolos compartidos el método cubre** (peor barra 0,005 % en PEGASE), pero
+  la concentración se pierde: el ancho pasa de 0,54 veces la caja afín con fuentes independientes a entre
+  0,82 y 0,95 veces. Un factor común no se promedia. Con un factor global en IEEE-33 el radio queda
+  topado por la caja afín.
+- **Un modelo de factores mal especificado falla:** el de un factor con la misma correlación que la cópula deja fuera
+  hasta el 3,4 % de las muestras en una barra de PEGASE. Igualar la correlación no basta: la cópula tiene otra
+  dependencia en las colas. 3σ con la Σ_ε verdadera llega a 1,26 %.
+- **El peor caso lineal es lo único robusto a la especificación**, con una condición: con la slack sola y la cópula
+  fuerte, en PEGASE incluso la caja afín con el rango de q queda fuera hasta el 1,87 % (el error de
+  linealización de C2, que el segundo orden no alcanza a cubrir); con los generadores repartiendo el desbalance,
+  0,000 %.
+- **Consecuencia para el paper:** la correlación hay que modelarla como estructura de símbolos compartidos y
+  declararla como supuesto; el aporte probabilístico es grande con fuentes independientes o débilmente
+  correlacionadas y se reduce con un factor común fuerte. Con correlación fuerte, el balance por la slack sola no es
+  un supuesto razonable a escala de transmisión.
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -3123,12 +3244,13 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 2 | El error de linealización es lo único que separa las cotas del 0,27 % nominal en el punto de diseño | B1 y 27.1 (columnas lineal y AC) | En la peor barra de PEGASE |
 | 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda), en dos sistemas; el rango es muestreado, no acotado |
 | 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
-| 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1]; con fuentes correlacionadas (C2) hay que cambiarlo |
+| 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1] |
+| 5b | Fuentes correlacionadas: escritas como símbolos compartidos, el mismo método cubre; suponer independencia o un modelo mal especificado no | 28.6 | La ganancia sobre el peor caso cae con un factor común fuerte; la estructura de correlación es un supuesto del modelo; con la slack sola y correlación fuerte falla la linealización en PEGASE |
 | 6 | 3σ, la reformulación gaussiana habitual, no cubre aun corregida | 27.2, 28.3 | Cobertura por objetivo, no simultánea (C5) |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
 | 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
 
-Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, fuentes correlacionadas, datos
+Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, correlación estimada de datos
 reales de carga y generación, sistemas distintos de los dos del manuscrito para la corrección, y una revisión
 bibliográfica en bases indexadas (RELATED_WORK.md, quinta pasada).
 

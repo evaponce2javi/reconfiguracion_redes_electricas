@@ -38,6 +38,7 @@ python experiments/run_all.py x12            # encierro verificado, referencia c
 python experiments/run_all.py x13 x14        # escala (más de 1 h, a solas para los tiempos; descarga 3 casos de MATPOWER) y barras PV
 python experiments/run_all.py b4 b5          # corrección de segundo orden (B4: punto de diseño, barrido y tiempos, unas 2,5 h) y formas afines (B5: punto de diseño)
 python experiments/b5_affine_forms.py sweep  # B5: barrido carga x delta (unas 2 h); también: surrogate, radii
+python experiments/b6_correlated.py          # B6: fuentes correlacionadas como símbolos compartidos (unos 30 min)
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```

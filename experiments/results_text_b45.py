@@ -150,6 +150,45 @@ método completo en PEGASE (estudio lineal, modelo de segundo orden y 250 muestr
 las 250 están probadas solo en el punto de diseño. El muestreo necesita doble precisión: q es una suma de términos
 grandes que casi se cancelan.
 
+### 28.6 Fuentes correlacionadas (B6)
+
+**Cómo se modela.** A la manera de la aritmética afín, con símbolos compartidos: cada fuente es
+ε_k = w·ζ_z(k) + (1 − w)·η_k, con un factor ζ por zona (o uno global) y un ruido propio η_k, todos independientes
+y uniformes en [−1, 1] (`FactorModel`). El soporte de ε_k sigue en [−1, 1]; la correlación entre dos fuentes de
+la misma zona es w²/(w² + (1 − w)²), y su varianza baja (1/6 con ρ = 0,5). La forma afín reescrita sobre los
+símbolos independientes admite Bernstein sin cambios, y el rango de q se muestrea con la misma ley. La cópula
+gaussiana de C2 no se puede escribir así: para ella se prueba un modelo de un factor global con la misma
+correlación de Pearson. Balance con la slack sola o con los generadores en partes fijas (`participation_factors`).
+Punto de diseño, 20.000 muestras AC por caso, 1.000 muestras de q.
+
+**Barras**
+
+{{b6_bus}}
+
+**Caídas por rama**
+
+{{b6_drop}}
+
+*Script: `experiments/b6_correlated.py` · CSV: `results/b6_correlated.csv` · semilla por caso en la columna `seed`*
+
+- **Suponer independencia con fuentes correlacionadas no sirve:** en PEGASE la peor barra queda fuera entre el
+  <<B6_IND_MIN>> % y el <<B6_IND_MAX>> % de las muestras.
+- **Con la correlación escrita como símbolos compartidos el método cubre** (peor barra <<B6_FAC_MAX>> % en PEGASE), pero
+  la concentración se pierde: el ancho pasa de <<B6_IND_W>> veces la caja afín con fuentes independientes a entre
+  <<B6_FAC_WMIN>> y <<B6_FAC_WMAX>> veces. Un factor común no se promedia. Con un factor global en IEEE-33 el radio queda
+  topado por la caja afín.
+- **Un modelo de factores mal especificado falla:** el de un factor con la misma correlación que la cópula deja fuera
+  hasta el <<B6_COP_MATCH>> % de las muestras en una barra de PEGASE. Igualar la correlación no basta: la cópula tiene otra
+  dependencia en las colas. 3σ con la Σ_ε verdadera llega a <<B6_COP_S3>> %.
+- **El peor caso lineal es lo único robusto a la especificación**, con una condición: con la slack sola y la cópula
+  fuerte, en PEGASE incluso la caja afín con el rango de q queda fuera hasta el <<B6_COP_AFF_SLACK>> % (el error de
+  linealización de C2, que el segundo orden no alcanza a cubrir); con los generadores repartiendo el desbalance,
+  <<B6_COP_AFF_PART>> %.
+- **Consecuencia para el paper:** la correlación hay que modelarla como estructura de símbolos compartidos y
+  declararla como supuesto; el aporte probabilístico es grande con fuentes independientes o débilmente
+  correlacionadas y se reduce con un factor común fuerte. Con correlación fuerte, el balance por la slack sola no es
+  un supuesto razonable a escala de transmisión.
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -162,12 +201,13 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 2 | El error de linealización es lo único que separa las cotas del 0,27 % nominal en el punto de diseño | B1 y 27.1 (columnas lineal y AC) | En la peor barra de PEGASE |
 | 3 | El rango del término cuadrático corrige ese error en todo el rango carga × δ; un ajuste de media y varianza no basta | 27.2 y 28.3 | Validado por Monte Carlo (20.000 muestras por celda), en dos sistemas; el rango es muestreado, no acotado |
 | 4 | Las caídas por rama desde la forma afín de la diferencia son varias veces más angostas que restar intervalos de barra, con la misma cobertura | 28.1 y 28.3 | Solo caídas de magnitud; corrientes y flujos no están medidos |
-| 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1]; con fuentes correlacionadas (C2) hay que cambiarlo |
+| 5 | Un radio que usa el soporte acotado (Bernstein o Hoeffding) cubre sin suponer normalidad; los que usan solo la varianza equivalen al peor caso | 28.4 | Supone símbolos independientes con soporte [−1, 1] |
+| 5b | Fuentes correlacionadas: escritas como símbolos compartidos, el mismo método cubre; suponer independencia o un modelo mal especificado no | 28.6 | La ganancia sobre el peor caso cae con un factor común fuerte; la estructura de correlación es un supuesto del modelo; con la slack sola y correlación fuerte falla la linealización en PEGASE |
 | 6 | 3σ, la reformulación gaussiana habitual, no cubre aun corregida | 27.2, 28.3 | Cobertura por objetivo, no simultánea (C5) |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
 | 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; 250 muestras probadas solo en el punto de diseño |
 
-Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, fuentes correlacionadas, datos
+Lo que este informe no respalda todavía: cobertura simultánea de todas las barras, correlación estimada de datos
 reales de carga y generación, sistemas distintos de los dos del manuscrito para la corrección, y una revisión
 bibliográfica en bases indexadas (RELATED_WORK.md, quinta pasada).
 """
