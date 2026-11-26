@@ -313,9 +313,19 @@ argumento: se miden contra AC. Mismas celdas que B8 y B9.
   <<B11_W1>> %, porque α_L baja a 0,07 %); en alguna corriente el ancho llega a <<B11_WMAX4>> veces, donde el rango de
   4.000 muestras alcanza más cola que el de 1.000.
 - Ninguna celda supera el nominal (peor objetivo <<B11_WORST>> %).
-- Costo: en PEGASE-2869, unos <<B11_T4>> s para las 4.000 muestras de barras, caídas y corrientes. Lo caro son las
-  corrientes, que necesitan el estado de segundo orden (una resolución por lote); para barras y caídas bastan unos
-  4 s (28.5).
+- **Costo, medido en un proceso y con la máquina libre** (la columna de tiempos de B11 viene de corridas en paralelo y
+  está inflada). Una sola pasada de muestreo sirve a todos los objetivos: comparte ΔV₁ = Eε, el término z y el estado de
+  segundo orden, y la parte lineal de las corrientes sale de Y_b·ΔV₁ (disperso) en vez del producto denso de sus
+  coeficientes (`NonlinearSampler`). Los resultados son idénticos a los de B11 al redondeo.
+
+{{b11_timing}}
+
+*Script: `experiments/b11_certified.py` (modo `timing`) · CSV: `results/b11_timing.csv` · mediana de 3 repeticiones*
+
+  En PEGASE-2869 el método certificado toma <<B11_TV>> s para voltajes y caídas y <<B11_TC>> s con las corrientes de las
+  9.118 puntas de rama: <<B11_SPV>> y <<B11_SPC>> veces menos que el Monte Carlo AC por lotes de C8 (<<B11_MC>> s, que además
+  solo estima los cuantiles, sin garantía), y <<B11_SPPP>> veces menos que un Monte Carlo con pandapower en lazo. Ninguna
+  parte del método resuelve flujos de potencia.
 
 ---
 

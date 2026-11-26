@@ -17,7 +17,7 @@ SOLVE_BLOCK = 32                                   # right-hand sides per SuperL
 SOLVE_THREADS = max(1, (os.cpu_count() or 2) // 2)
 
 
-def solve_blocked(lu, rhs, block: int = SOLVE_BLOCK, threads: int | None = None):
+def solve_blocked(lu, rhs, block: int = SOLVE_BLOCK, threads: int | None = None, trans: str = "N"):
     """``lu.solve`` for a dense (n, m) right-hand side, in blocks of ``block`` columns.
 
     SuperLU sweeps every supernode over all columns of the right-hand side, so one call with hundreds
@@ -26,13 +26,13 @@ def solve_blocked(lu, rhs, block: int = SOLVE_BLOCK, threads: int | None = None)
     """
     rhs = np.asarray(rhs)
     if rhs.ndim == 1 or rhs.shape[1] <= block:
-        return lu.solve(np.ascontiguousarray(rhs))
+        return lu.solve(np.ascontiguousarray(rhs), trans=trans)
     threads = SOLVE_THREADS if threads is None else threads
     out = np.empty(rhs.shape, dtype=np.result_type(rhs.dtype, np.float64))
     starts = range(0, rhs.shape[1], block)
 
     def work(s):
-        out[:, s:s + block] = lu.solve(np.ascontiguousarray(rhs[:, s:s + block]))
+        out[:, s:s + block] = lu.solve(np.ascontiguousarray(rhs[:, s:s + block]), trans=trans)
 
     if threads <= 1:
         for s in starts:

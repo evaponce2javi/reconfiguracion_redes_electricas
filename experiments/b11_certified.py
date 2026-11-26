@@ -7,7 +7,8 @@ This experiment measures what the certificate costs in width against the uncerti
 Targets: bus |V|, branch drops |V_i| - |V_j| and branch-end currents |I|. Cells: those of B8 and B9.
 
     python experiments/b11_certified.py
-Writes results/b11_certified.csv
+    python experiments/b11_certified.py timing     # cost of the certified method, one process
+Writes results/b11_certified.csv (and results/b11_timing.csv)
 """
 from time import perf_counter
 
@@ -104,7 +105,41 @@ def run(task):
     return rows
 
 
+def run_timing(case, delta, repeats=3, n=4000):
+    """Single-process cost of the certified method for buses, drops and branch currents (no Monte Carlo)."""
+    from cdhim.affine_forms import BranchCurrents, NonlinearSampler, certified_bernstein
+    rows = []
+    for rep in range(repeats):
+        T = {}
+        t = perf_counter(); st = study(case, threads=1); T["linear_study_s"] = perf_counter() - t
+        t = perf_counter()
+        res = st.run(delta, method())
+        v = res.valid
+        n_pq = st.C1.shape[0]
+        Ws = {"bus": bus_targets(n_pq), "drop": drop_targets(n_pq, res.fi[v], res.ti[v])}
+        C = {k: np.asarray(W.T @ (st.C1 * delta)) for k, W in Ws.items()}
+        T["voltage_forms_s"] = perf_counter() - t
+        t = perf_counter(); so = SecondOrder(st, delta); T["second_order_model_s"] = perf_counter() - t
+        t = perf_counter(); bc = BranchCurrents(st, so); C["current"] = bc.C; T["current_forms_s"] = perf_counter() - t
+        t = perf_counter(); NonlinearSampler(so, Ws).ranges(n, rep); T["samples_voltage_targets_s"] = perf_counter() - t
+        t = perf_counter(); NonlinearSampler(so, Ws, bc).ranges(n, rep); T["samples_all_targets_s"] = perf_counter() - t
+        t = perf_counter(); [certified_bernstein(c, ALPHA, n) for c in C.values()]; T["radii_s"] = perf_counter() - t
+        base = T["linear_study_s"] + T["voltage_forms_s"] + T["second_order_model_s"] + T["radii_s"]
+        rows.append({"case": case, "delta": delta, "repeat": rep, "n_surrogate": n, "n_bus": int(n_pq),
+                     "n_drop": int(Ws["drop"].shape[1]), "n_current_ends": int(bc.C.shape[0]), **{k: round(x, 3) for k, x in T.items()},
+                     "total_voltages_s": round(base + T["samples_voltage_targets_s"], 3),
+                     "total_with_currents_s": round(base + T["current_forms_s"] + T["samples_all_targets_s"], 3)})
+        print(f"[b11] timing {case} {rows[-1]}", flush=True)
+    return rows
+
+
 def main():
+    import sys
+    if "timing" in sys.argv[1:]:
+        rows = [r for c, d in CASES.items() for r in run_timing(c, d)]
+        print(save_table("b11_timing", rows, {"note": "one process, run alone; certified bounds with 4.000 samples; "
+                                                       "samples_all_targets_s includes the voltage targets"}))
+        return
     tasks = []
     for case, d in CASES.items():
         tasks.append((case, 1.0, "design", d, EXP["n_ac"]))

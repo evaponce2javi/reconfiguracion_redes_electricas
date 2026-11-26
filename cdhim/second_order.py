@@ -76,9 +76,8 @@ class SecondOrder:
         alpha = np.zeros((2 * m, npq))
         alpha[col[pq], np.arange(npq)] = er[:, 0]
         alpha[m + col[pq], np.arange(npq)] = ei[:, 0]
-        beta = np.empty_like(alpha)                                  # J^-T alpha, one column per PQ bus
-        for s in range(0, npq, 32):
-            beta[:, s:s + 32] = lu.solve(np.ascontiguousarray(alpha[:, s:s + 32]), trans="T")
+        beta = solve_blocked(lu, alpha, block=32, threads=1, trans="T")   # J^-T alpha, one column per PQ bus (the
+        # transposed SuperLU solve does not run faster in threads: measured 0.7 s serial against 1.9 s threaded on PEGASE-2869)
         gam = np.zeros((n, npq), complex)                            # weight of q_m in d|V_i|
         gam[ns] = beta[:m]
         gam[pq] -= 1j * beta[m:m + npq]

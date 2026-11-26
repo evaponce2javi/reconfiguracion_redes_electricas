@@ -1,0 +1,14 @@
+{
+  "table": "b11_timing",
+  "script": "b11_certified.py",
+  "generated_utc": "2026-11-26T19:57:39+00:00",
+  "git_commit": "d3a08b0",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "note": "one process, run alone; certified bounds with 4.000 samples; samples_all_targets_s includes the voltage targets"
+}

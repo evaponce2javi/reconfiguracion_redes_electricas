@@ -341,13 +341,25 @@ def t_b11(h):
                         ("worst", "Peor violación (%)", ".3f"), ("w", "Ancho / sin certificar, mediana", ".3f"), ("wmax", "máximo", ".2f")])
 
 
+def t_b11_timing(h):
+    d = _csv(h, "b11_timing").groupby("case").median(numeric_only=True).reset_index()
+    d["sys"] = d.case.map(_CASES)
+    d["o"] = d.case.map(list(_CASES).index)
+    d = d.sort_values("o")
+    return h.table(d, [("sys", "Sistema", None), ("n_bus", "Barras PQ", "d"), ("n_current_ends", "Extremos de rama", "d"),
+                       ("linear_study_s", "Estudio lineal (s)", ".2f"), ("second_order_model_s", "Modelo de 2.º orden (s)", ".2f"),
+                       ("samples_voltage_targets_s", "4.000 muestras, barras y caídas (s)", ".2f"),
+                       ("samples_all_targets_s", "4.000 muestras, con corrientes (s)", ".2f"),
+                       ("total_voltages_s", "Total, voltajes (s)", ".2f"), ("total_with_currents_s", "Total, con corrientes (s)", ".2f")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
             "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
             "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop"),
             "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h),
-            "b8": lambda: t_b8(h), "b11": lambda: t_b11(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
+            "b8": lambda: t_b8(h), "b11": lambda: t_b11(h), "b11_timing": lambda: t_b11_timing(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
@@ -449,6 +461,12 @@ def values(h):
             "B11_W1": n(100 * (c1.width_over_uncertified_median.median() - 1), ".1f"),
             "B11_WMAX4": n(c4.width_over_uncertified_max.max(), ".2f"),
             "B11_WORST": n(b11[b11.kind == "certified"].max_pct.max(), ".3f"), "B11_T4": n(tq, ".0f")}
+    tm11 = _csv(h, "b11_timing").groupby("case").median(numeric_only=True)
+    c8t = _csv(h, "c8_timing").set_index("system")
+    tv, tc = tm11.loc[P, "total_voltages_s"], tm11.loc[P, "total_with_currents_s"]
+    mc, pp = c8t.loc["pegase2869", "ac_mc_batched_s"], c8t.loc["pegase2869", "pandapower_loop_extrapolated_s"]
+    b11v.update({"B11_TV": n(tv, ".1f"), "B11_TC": n(tc, ".1f"), "B11_SPV": n(mc / tv, ".0f"), "B11_SPC": n(mc / tc, ".0f"),
+                 "B11_SPPP": n(pp / tc, ".0f"), "B11_MC": n(mc, ".0f")})
     return {**b6v, **b7v, **b8v, **b11v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),

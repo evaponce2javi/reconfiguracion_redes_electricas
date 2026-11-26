@@ -23,6 +23,7 @@ from __future__ import annotations
 import numpy as np
 import scipy.sparse as sp
 
+from .powerflow import solve_blocked
 from .second_order import SecondOrder
 
 VAR_UNIFORM = 1.0 / 3.0
@@ -227,3 +228,68 @@ def certified_split(alpha: float, n_samples: int) -> float:
 def certified_bernstein(Ct: np.ndarray, alpha: float, n_samples: int, var_eps: float = VAR_UNIFORM) -> np.ndarray:
     """Bernstein radius at the level that, with the sampled range of the quadratic term, certifies ``alpha``."""
     return bernstein_radius(Ct, certified_split(alpha, n_samples), var_eps)
+
+
+# ----------------------------------------------------------------------------- one sampling pass for every target
+class BranchCurrents:
+    """|I| at both ends of every in-service branch with |I_0| > i_min: rows Yb of [Yf; Yt], first-order coefficients."""
+
+    def __init__(self, st, so: SecondOrder, i_min: float = 1e-6):
+        g = st.grid
+        Yb = sp.vstack([g.Yf, g.Yt]).tocsr()
+        I0 = Yb @ st.V_star
+        self.keep = np.abs(I0) > i_min
+        self.Yb, self.I0 = Yb[self.keep], I0[self.keep]
+        self.u = np.conj(self.I0) / np.abs(self.I0)
+        self.C = np.real(self.u[:, None] * (self.Yb @ so.E))     # (n_ends, N_u), computed once
+
+
+class NonlinearSampler:
+    """Samples of the nonlinear part of every target in one pass, sharing the expensive pieces.
+
+    Per batch: dV1 = E eps and z = dV1 conj(Y dV1) once; the quadratic term of |V| for every combination of buses
+    (SecondOrder.quadratic, from the same dV1 and z); for branch currents, the second-order state dV1 + dV2
+    (one sparse LU solve) and the remainder |I_0 + Yb dV| - |I_0| - Re(conj(u) Yb dV1), with the first-order part
+    taken from Yb dV1 (sparse) instead of the dense product of the coefficients with eps.
+    """
+
+    def __init__(self, so: SecondOrder, Ws: dict, currents: BranchCurrents | None = None):
+        self.so, self.cur = so, currents
+        self.WT = {k: sp.csr_matrix(W.T) for k, W in Ws.items()}
+
+    def batch(self, eps):
+        so = self.so
+        g = so.st.grid
+        a = so.E @ eps
+        Ya = so.Y @ a
+        z = a * np.conj(Ya)
+        q = -(so.gam.T @ z).real + (so.c_perp @ eps) ** 2 / (2.0 * so.vm[:, None])
+        if so.has_pv:
+            q -= so.bv.T @ (a.real ** 2 + a.imag ** 2)
+        out = {k: Wt @ q for k, Wt in self.WT.items()}
+        if self.cur is not None:
+            ns, pq = g.pvpq, g.pq
+            rows = [z.real[ns], z.imag[pq]]
+            if so.has_pv:
+                rows.append(np.abs(a[g.pv]) ** 2)
+            d2 = -solve_blocked(so.lu, np.vstack(rows))
+            dv = a.copy()
+            dv[ns] += d2[:so.m] + 1j * d2[so.m:]
+            c = self.cur
+            dI1 = c.Yb @ a
+            out["current"] = (np.abs(c.I0[:, None] + c.Yb @ dv) - np.abs(c.I0)[:, None]
+                              - np.real(c.u[:, None] * dI1))
+        return out
+
+    def ranges(self, n: int, seed: int, sampler=None, batch: int = 500):
+        """(min, max) of every target's nonlinear part over n samples."""
+        from .uncertainty import sample_eps
+        rng = np.random.default_rng(seed)
+        lo, hi = {}, {}
+        for s in range(0, n, batch):
+            b = min(batch, n - s)
+            eps = sampler(rng, b) if sampler is not None else sample_eps(rng, self.so.c_lin.shape[1], b)
+            for k, v in self.batch(eps).items():
+                lo[k] = np.minimum(lo[k], v.min(axis=1)) if k in lo else v.min(axis=1)
+                hi[k] = np.maximum(hi[k], v.max(axis=1)) if k in hi else v.max(axis=1)
+        return {k: (lo[k], hi[k]) for k in lo}
