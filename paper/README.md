@@ -9,6 +9,7 @@ Journal of Modern Power Systems and Clean Energy (acceso abierto sin cargo segú
 |---|---|
 | `main.tex` | Esqueleto con la clase `elsarticle`: título, resumen y highlights en borrador; la proposición de cobertura con su prueba; el plan de cada sección en rojo (`\plan`, `\nota`) y la fuente de cada cifra en azul (`\src`). |
 | `refs.bib` | Bibliografía del kit de CD-HIM más las referencias nuevas (DOI verificados en OpenAlex). Las marcadas `TODO: verify` hay que revisarlas. |
+| `cover_letter.md` | Borrador de la carta al editor (en inglés). |
 | `tables/` | Tablas 1 a 3 en LaTeX, generadas por `experiments/tables_paper.py` desde los CSV. |
 | `figures/` | Fig. 1 a 3 en PDF, generadas por `experiments/figures_paper.py` desde los CSV de `results/` (la Fig. 1 primero con `compute`). |
 
@@ -40,10 +41,16 @@ Por verificar en la guía: límite del resumen, highlights (número y caracteres
 doble ciego, declaración de uso de IA generativa, y la política de preprint (si se puede subir a arXiv o al
 repositorio de la PUCV).
 
-## Pendientes antes de redactar
+## Comprobación de cifras
 
-1. Elegir el título (tres opciones en `main.tex`).
-2. Revisión del texto completo por el grupo (todas las secciones están redactadas); la introducción es la que más
-   pesa para el editor. Falta una frase de trabajo futuro en las conclusiones y la nomenclatura.
-3. Decidir la declaración de uso de IA y el repositorio de datos.
-4. Revisar las referencias marcadas `TODO`.
+`python experiments/check_paper_numbers.py` recalcula desde los CSV las 45 cifras citadas en el texto y verifica que
+`main.tex` diga exactamente eso. Correrlo después de editar el texto o de regenerar resultados.
+
+## Pendientes antes de enviar
+
+1. Revisión del texto completo por el grupo; la introducción es la que más pesa para el editor.
+2. Elegir el título (tres opciones comentadas en `main.tex`).
+3. CRediT (roles de cada autor), y ajustar los borradores de las declaraciones de uso de IA y de datos.
+4. Publicar el repositorio con un DOI y poner el enlace en la declaración de datos y en la carta.
+5. Verificar la guía de EPSR (sección anterior) y quitar las marcas en rojo y azul (`\plan`, `\nota`, `\src`).
+6. Al enviar, no marcar la opción de acceso abierto.

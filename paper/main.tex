@@ -37,19 +37,18 @@
 % \nota{Verificar en la guía de EPSR el formato de autores, correo de contacto y si la revisión es simple o doble ciego.}
 
 \begin{abstract}
-% \nota{Borrador, unas 220 palabras; el artículo de referencia de EPSR (Singh et al. 2025) tiene unas 160. Verificar el límite en la guía de EPSR y acortar si hace falta. Cifras: §28.8, §28.12.}
-Linearized probabilistic power flow models are fast and widely used to bound bus voltages and branch flows under
-uncertain injections, but their bounds are rarely checked where operational decisions are taken: in the extreme
-tails. We show on four test systems of up to 2869 buses that cumulant and point-estimate methods leave up to 12\% of
-nonlinear AC samples outside bus-voltage bounds designed for 0.27\%, and up to 100\% outside branch-current bounds,
-and that correcting the linearization with the mean and variance of the second-order term, as existing second-order
-methods do, is not enough. The reason is that the linearization error is skewed and heavy-tailed. We propose to bound each output with
-its sparse affine form, a distribution-free concentration radius, and the range of the exact second-order term,
-sampled from a closed-form quadratic model without solving any power flow. An order-statistics argument turns the
-sampled range into a provable coverage level for the second-order model. Whenever its assumptions hold (independent or factor-correlated
-sources with bounded support), the bound stays below the nominal level against AC samples in every tested case, from
-80\% load to 95\% of the loadability limit and with dispersion levels up to 30\%, for bus voltages, branch voltage
-drops and branch currents, in about 10\,s on PEGASE-2869.
+% \nota{Unas 170 palabras (el artículo de referencia de EPSR tiene unas 160); verificar el límite en la guía. Cifras: §28.8, §28.12; las comprueba experiments/check_paper_numbers.py.}
+Linearized probabilistic power flow is widely used to bound bus voltages and branch flows under uncertain
+injections, but its bounds are rarely checked in the extreme tails, where operational decisions are taken. On four
+test systems of up to 2869 buses, cumulant and point-estimate methods leave up to 12\% of nonlinear AC samples outside
+bus-voltage bounds designed for 0.27\%, and up to 100\% outside branch-current bounds. Correcting the linearization
+with the mean and variance of the second-order term, as existing second-order methods do, is not enough: the
+linearization error is skewed and heavy-tailed. We bound each output with its sparse affine form, a
+distribution-free concentration radius, and the range of the exact second-order term, sampled from a closed-form
+quadratic model without solving power flows. An order-statistics argument makes the coverage level provable for the
+second-order model. Under its assumptions (independent or factor-correlated sources with bounded support), the bound
+stays below the nominal level in every tested case, up to 95\% of the loadability limit and 30\% dispersion, for bus
+voltages, branch drops and branch currents, in about 10\,s on PEGASE-2869.
 \end{abstract}
 
 \begin{highlights}
@@ -399,25 +398,32 @@ the range of the exact second-order term, sampled from a closed-form model witho
 distribution-free concentration radius gives bounds that cover against the AC power flow in every tested case where
 the assumptions hold, with a level that can be proved for the second-order model at a cost of a few percent in width.
 On a 2869-bus system the bounds for all bus voltages, branch drops and branch currents take about 10\,s.
-\plan{Trabajo futuro, una frase: uso de las cotas en restricciones de azar de un OPF; datos reales; cotas del tercer
-orden.}
+Future work includes using the bounds as constraint tightenings in chance-constrained optimal power flow, estimating
+the factor structure of the sources from measured load and renewable data, and bounding the third-order remainder.
 
 % =============================================================================================================
 % =============================================================================================================
 \section*{CRediT authorship contribution statement}
-\nota{Completar (EPSR lo publica; ver el formato en Singh et al. 2025).}
+\nota{Asignar los roles CRediT a cada autor (formato de Singh et al. 2025 en EPSR). Por ejemplo:}
+\textbf{Eva Ponce-Fernández:} \nota{roles}.
+\textbf{Juan Geraldo-Ulloa:} \nota{roles}.
+\textbf{Ignacio Araya:} \nota{roles}.
 
 \section*{Declaration of competing interest}
 The authors declare that they have no known competing financial interests or personal relationships that could
 have appeared to influence the work reported in this paper.
 
-\section*{Declaration of generative AI and AI-assisted technologies}
-\nota{Elsevier pide declarar el uso de IA generativa en la redacción. Este trabajo usó un asistente de IA para el
-código, los experimentos y borradores; el grupo debe decidir y redactar la declaración según la guía vigente.}
+\section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
+\nota{Borrador para que el grupo lo ajuste a lo que realmente hizo y a la guía vigente de Elsevier:}
+During the preparation of this work the authors used an AI coding and writing assistant to implement and run the
+numerical experiments and to draft parts of the text. The authors reviewed, verified and edited all code, results and
+text, checked every reported number against the generated data, and take full responsibility for the content of the
+publication.
 
 \section*{Data availability}
-\nota{Propuesta: código y resultados en un repositorio público con DOI (por ejemplo Zenodo); los casos de prueba
-son públicos (pandapower, PGLib, MATPOWER).}
+\nota{Borrador; requiere publicar el repositorio (por ejemplo en GitHub con un DOI de Zenodo):}
+The code that reproduces every table and figure, and the resulting data, are available at \nota{URL / DOI}. The test
+systems are public (pandapower, PGLib-OPF).
 
 \bibliographystyle{elsarticle-num}
 \bibliography{refs}
