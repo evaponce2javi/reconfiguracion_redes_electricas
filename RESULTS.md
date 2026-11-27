@@ -3678,6 +3678,32 @@ argumento: se miden contra AC. Mismas celdas que B8 y B9.
   solo estima los cuantiles, sin garantía), y 369 veces menos que un Monte Carlo con pandapower en lazo. Ninguna
   parte del método resuelve flujos de potencia.
 
+### 28.13 Variante angosta sin garantía (B12)
+
+Radio gaussiano 3,44σ por objetivo (√χ²₂(0,9973), el cuantil normal al 99,94 %: un 3σ con margen) más el rango de
+1.000 muestras del término de segundo orden, sin certificar. Es lo que hacía cubrir al intervalo del manuscrito una
+vez corregido (27.2), sin la elipse. Mismas 12 celdas de B8, barras, caídas y corrientes.
+
+| Versión | Objetivo | Celdas | Celdas con alguno sobre 0,27 % | Peor violación (%) | Ancho / certificada, mediana |
+|---|---|---:|---:|---:|---:|
+| certificada: Bernstein a α_L, 4.000 muestras | barra | 12 | 0 | 0,025 | 1,00 |
+| certificada: Bernstein a α_L, 4.000 muestras | caída | 12 | 0 | 0,035 | 1,00 |
+| certificada: Bernstein a α_L, 4.000 muestras | corriente | 12 | 0 | 0,065 | 1,00 |
+| angosta: 3,44σ, 1.000 muestras, sin garantía | barra | 12 | 0 | 0,215 | 0,59 |
+| angosta: 3,44σ, 1.000 muestras, sin garantía | caída | 12 | 0 | 0,220 | 0,62 |
+| angosta: 3,44σ, 1.000 muestras, sin garantía | corriente | 12 | 0 | 0,195 | 0,62 |
+| 3σ, 1.000 muestras (contraste) | barra | 12 | 6 | 0,476 | 0,51 |
+| 3σ, 1.000 muestras (contraste) | caída | 12 | 6 | 0,441 | 0,54 |
+| 3σ, 1.000 muestras (contraste) | corriente | 12 | 5 | 0,426 | 0,55 |
+
+*Script: `experiments/b12_gaussian_variant.py` · CSV: `results/b12_gaussian_variant.csv`, `results/b12_timing.csv`*
+
+- La variante angosta no supera el nominal en ninguna celda (peor objetivo 0,22 %, cerca del 0,27 %) y mide
+  0,61 veces la certificada en mediana. 3σ con el mismo rango falla en 5 a 6 de las 12 celdas según el
+  objetivo: el margen de 3,44σ es lo que la sostiene.
+- Costo en PEGASE-2869, un proceso: 4,2 s para voltajes y 5,0 s con corrientes, frente a 7,1 s y
+  10,5 s la certificada.
+
 ---
 
 ## 29. Lista de afirmaciones para el paper de formas afines
@@ -3699,6 +3725,7 @@ Cada afirmación con su respaldo y su límite. Sin fila de respaldo, no entra (C
 | 6 | 3σ, la reformulación gaussiana habitual, no cubre por objetivo aun corregida | 27.2, 28.3, 28.7 | Con Bonferroni sí cubre en la práctica, sin garantía |
 | 6b | La cobertura simultánea con un radio sin distribución cuesta lo mismo que el peor caso; la ventaja de la concentración es por objetivo y depende del número de fuentes por barra | 28.7 | En IEEE-118 la concentración no aporta |
 | 7 | La cota de peor caso de segundo orden no encierra la solución AC en los vértices de una red de transmisión | 28.2 | Es un resultado negativo; en IEEE-33 el exceso es despreciable |
+| 7b | Una variante angosta (3,44σ con el rango) cubre en las celdas probadas, unas 40 % más angosta y la mitad de cara, sin garantía | 28.13 | Su peor objetivo queda cerca del nominal; no se demuestra |
 | 8 | El método completo es unas 15 veces más rápido que un Monte Carlo AC por lotes en 2.869 barras | 28.5 y C8 | Depende de la implementación del Monte Carlo; con 1.000 muestras de q, en vez de 250, algo menos (28.11) |
 
 Lo que este informe no respalda todavía: una garantía simultánea más angosta que el peor caso, correlación estimada de datos

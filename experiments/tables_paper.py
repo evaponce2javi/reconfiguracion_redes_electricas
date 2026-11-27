@@ -5,6 +5,7 @@
 tab_baselines.tex   worst bus violation of published methods and of the proposed bound (B8)
 tab_coverage.tex    coverage of the proposed bound over every load x dispersion grid (B5 sweep, B7 grid)
 tab_cost.tex        single-process cost of the certified method (B11 timing)
+tab_variants.tex    certified bound against the narrow Gaussian variant (B12)
 """
 import pandas as pd
 
@@ -85,7 +86,30 @@ def tab_cost():
     write("tab_cost.tex", "\n".join(lines) + "\n")
 
 
+def tab_variants():
+    d = pd.read_csv(RES / "b12_gaussian_variant.csv")
+    t = pd.read_csv(RES / "b12_timing.csv").groupby("case").median(numeric_only=True).loc["pglib_opf_case2869_pegase"]
+    names = {"bern_cert": "certified: Bernstein at $\\alpha_L$, $n = 4000$", "gauss344": "narrow: $3.44\\sigma$, $n = 1000$, no guarantee",
+             "sig3": "$3\\sigma$, $n = 1000$ (for contrast)"}
+    times = {"bern_cert": (t.total_certified_voltages_s, t.total_certified_all_s), "gauss344": (t.total_variant_voltages_s, t.total_variant_all_s),
+             "sig3": (t.total_variant_voltages_s, t.total_variant_all_s)}
+    lines = [r"\begin{tabular}{lrrrrrr}", r"\toprule",
+             r" & \multicolumn{3}{c}{worst violation (\%) / cells over 0.27\%} & width & \multicolumn{2}{c}{time, PEGASE-2869 (s)} \\",
+             r"\cmidrule(lr){2-4}\cmidrule(lr){6-7}",
+             r"version & buses & drops & currents & / certified & voltages & with currents \\", r"\midrule"]
+    for b in ("bern_cert", "gauss344", "sig3"):
+        cells = []
+        for tg in ("bus", "drop", "current"):
+            g = d[(d.bound == b) & (d.target == tg)]
+            cells.append(f"{g.max_pct.max():.3f} / {int((g.n_over_alpha > 0).sum())}")
+        w = d[d.bound == b].width_over_certified_median.median()
+        lines.append(f"{names[b]} & {' & '.join(cells)} & {w:.2f} & {times[b][0]:.1f} & {times[b][1]:.1f} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    write("tab_variants.tex", "\n".join(lines) + "\n")
+
+
 if __name__ == "__main__":
     tab_baselines()
     tab_coverage()
     tab_cost()
+    tab_variants()

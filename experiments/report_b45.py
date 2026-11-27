@@ -353,13 +353,28 @@ def t_b11_timing(h):
                        ("total_voltages_s", "Total, voltajes (s)", ".2f"), ("total_with_currents_s", "Total, con corrientes (s)", ".2f")])
 
 
+def t_b12(h):
+    d = _csv(h, "b12_gaussian_variant")
+    names = {"bern_cert": "certificada: Bernstein a α_L, 4.000 muestras", "gauss344": "angosta: 3,44σ, 1.000 muestras, sin garantía",
+             "sig3": "3σ, 1.000 muestras (contraste)"}
+    rows = []
+    for b in ("bern_cert", "gauss344", "sig3"):
+        for tg, lab in (("bus", "barra"), ("drop", "caída"), ("current", "corriente")):
+            g = d[(d.bound == b) & (d.target == tg)]
+            rows.append({"v": names[b], "tg": lab, "cells": len(g), "bad": int((g.n_over_alpha > 0).sum()), "worst": g.max_pct.max(),
+                         "w": g.width_over_certified_median.median()})
+    return h.table(pd.DataFrame(rows), [("v", "Versión", None), ("tg", "Objetivo", None), ("cells", "Celdas", "d"),
+                                        ("bad", "Celdas con alguno sobre 0,27 %", "d"), ("worst", "Peor violación (%)", ".3f"),
+                                        ("w", "Ancho / certificada, mediana", ".2f")])
+
+
 def tables(h):
     return {"b4_design": lambda: t_b4_design(h), "b4_sweep": lambda: t_b4_sweep(h), "b4_timing": lambda: t_b4_timing(h),
             "b5_design": lambda: t_b5_design(h), "b5_vertex": lambda: t_b5_vertex(h), "b5_sweep": lambda: t_b5_sweep(h),
             "b5_surrogate": lambda: t_b5_surrogate(h), "b5_radii": lambda: t_b5_radii(h),
             "b6_bus": lambda: t_b6(h, "bus"), "b6_drop": lambda: t_b6(h, "drop"),
             "b7_design": lambda: t_b7_design(h), "b7_grid": lambda: t_b7_grid(h),
-            "b8": lambda: t_b8(h), "b11": lambda: t_b11(h), "b11_timing": lambda: t_b11_timing(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
+            "b8": lambda: t_b8(h), "b11": lambda: t_b11(h), "b12": lambda: t_b12(h), "b11_timing": lambda: t_b11_timing(h), "b9": lambda: t_b9(h), "b10": lambda: t_b10(h), "b5_n250": lambda: t_b5_n250(h)}
 
 
 # ----------------------------------------------------------------------------- numbers quoted in the text
@@ -467,6 +482,14 @@ def values(h):
     mc, pp = c8t.loc["pegase2869", "ac_mc_batched_s"], c8t.loc["pegase2869", "pandapower_loop_extrapolated_s"]
     b11v.update({"B11_TV": n(tv, ".1f"), "B11_TC": n(tc, ".1f"), "B11_SPV": n(mc / tv, ".0f"), "B11_SPC": n(mc / tc, ".0f"),
                  "B11_SPPP": n(pp / tc, ".0f"), "B11_MC": n(mc, ".0f")})
+    b12 = _csv(h, "b12_gaussian_variant")
+    t12 = _csv(h, "b12_timing").groupby("case").median(numeric_only=True).loc[P]
+    g12 = b12[b12.bound == "gauss344"]
+    b8v.update({"B12_WORST": n(g12.max_pct.max(), ".2f"), "B12_W": n(g12.width_over_certified_median.median(), ".2f"),
+                "B12_S3BAD": f"{int(b12[b12.bound == 'sig3'].groupby('target').apply(lambda x: (x.n_over_alpha > 0).sum()).min())} a "
+                             f"{int(b12[b12.bound == 'sig3'].groupby('target').apply(lambda x: (x.n_over_alpha > 0).sum()).max())}",
+                "B12_TV": n(t12.total_variant_voltages_s, ".1f"), "B12_TA": n(t12.total_variant_all_s, ".1f"),
+                "B12_TCV": n(t12.total_certified_voltages_s, ".1f"), "B12_TCA": n(t12.total_certified_all_s, ".1f")})
     return {**b6v, **b7v, **b8v, **b11v,
         "B4_LMAX_0": n(sel("cdhim_lmax", "none").max_pct, ".2f"), "B4_LMAX_R": n(sel("cdhim_lmax", "range").max_pct, ".2f"),
         "B4_LMAX_RW": n(100 * (sel("cdhim_lmax", "range").width_ratio_median - 1), ".1f"),

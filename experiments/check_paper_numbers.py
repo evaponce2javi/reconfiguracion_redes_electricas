@@ -112,6 +112,16 @@ def checks():
     add("§6 IEEE-33 vertex excess", f"${m}\\cdot10^{{{int(e)}}}$")
     sysmax = max(g7.groupby(["case", "load_factor", "delta"]).any_bus_or_drop_pct.max().max(), 0)
     add("§6 per-target system-level share (grid)", f"below {sysmax:.3f}\\%")
+    b12 = csv("b12_gaussian_variant")
+    t12 = csv("b12_timing").groupby("case").median(numeric_only=True).loc[P]
+    g12 = b12[b12.bound == "gauss344"]
+    add("§4.5 variant time voltages", f"take {t12.total_variant_voltages_s:.1f}\\,s for the voltages")
+    add("§4.5 variant time with currents", f"and {t12.total_variant_all_s:.1f}\\,s with the")
+    add("§4.5 certified times", f"against {t12.total_certified_voltages_s:.1f}\\,s and {t12.total_certified_all_s:.1f}\\,s")
+    add("§5 narrow worst", f"worst target at {g12.max_pct.max():.2f}\\%")
+    add("§5 narrow width", f"about {100 * (1 - g12.width_over_certified_median.median()):.0f}\\% narrower than the certified")
+    s3 = b12[b12.bound == "sig3"].groupby("target").apply(lambda x: (x.n_over_alpha > 0).sum())
+    add("§5 3sigma cells failing", f"fails in {['zero','one','two','three','four','five','six','seven'][s3.min()]} or {['zero','one','two','three','four','five','six','seven'][s3.max()]} of the twelve")
     return out
 
 

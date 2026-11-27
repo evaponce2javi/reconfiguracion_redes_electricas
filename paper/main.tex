@@ -270,6 +270,22 @@ AC point, sparse LU and affine forms. Source: results/b11\_timing.csv.}
 \resizebox{\linewidth}{!}{\input{tables/tab_cost.tex}}
 \end{table}
 
+\subsection{Three versions}\label{sec:variants}
+The same construction gives three versions, depending on what the user needs:
+\begin{description}
+\item[Certified.] Bernstein radius at $\alpha_L = \alpha - 2/(n+1)$ with $n = 4000$ samples; Proposition~\ref{prop:cert}
+applies.
+\item[Fast.] Bernstein radius at $\alpha$ with $n = 1000$ samples. It is about 2\% narrower than the certified version
+and uses a quarter of the samples, but the level is no longer proved; it is the version used in most of the
+experiments of Section~\ref{sec:cases}.
+\item[Narrow.] A Gaussian radius $z\sigma$ with $z = \sqrt{\chi^2_2(1-\alpha)} = 3.44$ (the 99.94\% normal quantile, a
+$3\sigma$ radius with a safety margin), plus the range of $n = 1000$ samples. It is about 39\% narrower than the
+certified version and has no guarantee: it relies on the linear part being close to normal in the tail, which the
+plain $3\sigma$ radius shows is not always the case (Section~\ref{sec:cases}).
+\end{description}
+The fast and narrow versions cost the same; on PEGASE-2869 both take 4.2\,s for the voltages and 5.0\,s with the
+branch currents, against 7.1\,s and 10.5\,s for the certified one \src{results/b12\_timing.csv}.
+
 % =============================================================================================================
 \section{Case studies}\label{sec:cases}
 
@@ -359,6 +375,23 @@ linearization itself breaks on PEGASE-2869; with generators sharing the imbalanc
 distributions tested, including a U-shaped one whose variance (1/2) exceeds the default $\sigma_\varepsilon^2$; with
 unbounded inputs or inputs that leave the support, no bound covers, not even the worst case \src{RESULTS.md §28.10}.
 
+\subsection{Versions of the bound}
+Table~\ref{tab:variants} compares the certified and narrow versions on the twelve cells of
+Table~\ref{tab:baselines}, for buses, drops and branch currents. The narrow version stays below the nominal level in
+every cell, with its worst target at 0.22\%, close to the nominal level, and is about 39\% narrower than the certified
+one. The plain $3\sigma$ radius with the same range fails in five or six of the twelve cells for each kind of target,
+so the safety margin of the narrow version is not cosmetic \src{RESULTS.md §28.13}.
+
+\begin{table}[t]
+\centering\small
+\caption{Versions of the bound on the twelve cells of Table~\ref{tab:baselines} (four systems), against 20\,000 AC
+samples per cell: worst violation over all cells and number of cells with a target above 0.27\%, median width over
+the certified version, and single-process time on PEGASE-2869. Sources: results/b12\_gaussian\_variant.csv,
+results/b12\_timing.csv.}
+\label{tab:variants}
+\resizebox{\linewidth}{!}{\input{tables/tab_variants.tex}}
+\end{table}
+
 \subsection{Certified level}
 With $\alpha_L = \alpha - 2/(n+1)$ and $n = 4000$, the bounds widen by 2.2\% in median (9.6\% with $n = 1000$) and
 no cell of the twelve of Table~\ref{tab:baselines} exceeds the nominal level for buses, drops or currents; the worst
@@ -383,6 +416,8 @@ sources per output; on IEEE-118 there is none \src{§28.7}.
 correlated loads, the linearization breaks on PEGASE-2869 \src{§28.6}.
 \item \emph{Bounded support} is essential: $\delta$ must be the actual half-width of each injection \src{§28.10}.
 \item \emph{Third order} is measured against AC, not bounded.
+\item \emph{The fast and narrow versions have no guarantee.} The narrow version covered every tested cell, but its
+worst target (0.22\%) is close to the nominal level \src{§28.13}.
 \item \emph{Model scope:} no reactive-power limits on generators, balanced networks, synthetic load variations
 (no measured load or renewable data).
 \end{itemize}
