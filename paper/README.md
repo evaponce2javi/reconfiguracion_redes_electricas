@@ -6,7 +6,7 @@ Revista objetivo: **International Journal of Electrical Power & Energy Systems (
 |---|---|
 | `main.tex` | Esqueleto con la clase `elsarticle`: título, resumen y highlights en borrador; la proposición de cobertura con su prueba; el plan de cada sección en rojo (`\plan`, `\nota`) y la fuente de cada cifra en azul (`\src`). |
 | `refs.bib` | Bibliografía del kit de CD-HIM más las referencias nuevas (DOI verificados en OpenAlex). Las marcadas `TODO: verify` hay que revisarlas. |
-| `figures/` | Vacía. Las figuras se generan con un script por escribir (`experiments/figures_paper.py`), desde los CSV. |
+| `figures/` | Fig. 1 a 3 en PDF, generadas por `experiments/figures_paper.py` desde los CSV de `results/` (la Fig. 1 primero con `compute`). |
 
 Compilar: `cd paper && latexmk -pdf main.tex` (en el contenedor: `apt-get install texlive-latex-extra texlive-publishers
 latexmk`; `elsarticle` viene en `texlive-publishers`), o en Overleaf, que la trae incluida. Los archivos intermedios y
@@ -34,7 +34,6 @@ No se pudo leer en línea: ScienceDirect rechaza la descarga automática. Por el
 ## Pendientes antes de redactar
 
 1. Elegir el título (tres opciones en `main.tex`).
-2. Script de figuras: histograma del término cuadrático frente a la normal; mapa carga × δ; ancho de las corrientes.
-   Antes hay que generar el CSV del diagnóstico de asimetría y curtosis, que hoy no tiene uno.
+2. Redactar las secciones 1, 5, 6 y 7 (las 2 a 4 están redactadas) y el pseudocódigo de la sección 4.4.
 3. Decidir la declaración de uso de IA y el repositorio de datos.
 4. Revisar las referencias marcadas `TODO`.

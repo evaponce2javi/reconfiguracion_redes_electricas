@@ -43,6 +43,8 @@ python experiments/b7_generality.py          # B7: cobertura simultánea e IEEE-
 python experiments/b8_ppf_baselines.py       # B8: cumulantes y estimación por puntos (unos 40 min)
 python experiments/b9_branch_currents.py     # B9: corrientes de rama (unos 40 min)
 python experiments/b10_marginals.py          # B10: distribuciones no uniformes (unos 30 min)
+python experiments/figures_paper.py compute  # datos de la Fig. 1 del paper (forma del término cuadrático)
+python experiments/figures_paper.py          # figuras del paper en paper/figures/
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```

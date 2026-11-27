@@ -108,60 +108,114 @@ límites medidos (peor caso en vértices, cobertura simultánea) [§28.2, §28.6
 \section{Affine forms of the power-flow outputs}\label{sec:forms}
 
 \subsection{Uncertainty model}
-\plan{Reutilizar §II-B de caja-elipse.tex: forma afín $\hat x = x_0 + \sum_k x_k\varepsilon_k$; una fuente por $P_d$ y
-otra por $Q_d$ de cada carga, con semiancho $r_k = \delta|S_k^0|$. Supuestos explícitos (Assumption~\ref{as:sym}).}
+Every uncertain injection is written as an affine form, its forecast value plus a bounded deviation,
+\begin{equation}\label{eq:injection}
+S_k = S_k^0 + r_k\,\varepsilon_k, \qquad r_k = \delta\,|S_k^0|, \qquad \varepsilon_k\in[-1,1],
+\end{equation}
+where $\delta$ is the dispersion level, i.e.\ the relative half-width of the injection interval. The active and
+reactive demand of each load carry separate symbols, so a system with $N_L$ loads has $N_u \le 2N_L$ symbols
+($N_u = 2951$ for PEGASE-2869) \src{RESULTS.md §1}. The half-width $r_k$ is the actual range of the injection, not a
+standard deviation: the bounds below rely on it (Section~\ref{sec:limits}).
 
 \begin{assumption}\label{as:sym}
 The symbols $\varepsilon_k$ are independent, have zero mean, take values in $[-1,1]$ and have variance at most
-$\sigma_\varepsilon^2$ ($\sigma_\varepsilon^2 = 1/3$ by default). Their joint law is known well enough to sample it.
+$\sigma_\varepsilon^2$ ($\sigma_\varepsilon^2 = 1/3$ by default, the variance of the uniform law). Their joint law
+is known well enough to draw samples from it.
 \end{assumption}
-\nota{Correlación: con factores compartidos $\varepsilon_k = w\zeta_{z(k)} + (1-w)\eta_k$ el supuesto se cumple sobre los
-símbolos $(\zeta,\eta)$ [§28.6]. Discutirlo aquí o en §\ref{sec:limits}.}
+\noindent Sources that move together are written with shared symbols, as is natural in affine arithmetic: with a
+zone factor $\zeta_z$ and an idiosyncratic part $\eta_k$, $\varepsilon_k = w\,\zeta_{z(k)} + (1-w)\,\eta_k$ keeps
+$\varepsilon_k\in[-1,1]$, gives a correlation $w^2/(w^2+(1-w)^2)$ within a zone, and Assumption~\ref{as:sym} holds
+for the symbols $(\zeta,\eta)$ (Section~\ref{sec:cases}).
 
 \subsection{Sparse first-order forms}
-\plan{Reutilizar §II-A y §III-A de caja-elipse.tex (linealización en el punto AC convergido, LU dispersa con COLAMD,
-SuperLU, sin invertir $J$), quitando todo lo de la elipse. Escribir la forma afín de cada objetivo: barra
-$\Delta|V_i| = c_i^\top\varepsilon$; caída $c_i - c_j$; corriente
-$\Delta|I_\ell| = \mathrm{Re}\big(\overline{u_\ell}\,(Y_b E)_\ell\big)\varepsilon$ con $u_\ell = I_{\ell,0}/|I_{\ell,0}|$.
-Subrayar que la dependencia entre barras está en los símbolos compartidos: por eso la caída sale angosta [§28.1].}
+The power-flow equations are linearized at the converged AC solution of the forecast state, with the exact Jacobian
+$J$. Following \cite{bolognani2015fast,stott2009dc}, the sensitivities are obtained without inverting $J$: a sparse
+LU factorization with a fill-reducing column ordering \cite{davis2006direct} is computed once and the coefficients of
+all uncertain injections are retrieved by triangular solves. The result is an affine form for every output,
+\begin{equation}\label{eq:forms}
+\Delta|V_i| \approx c_i^\top\varepsilon,\qquad
+\Delta\big(|V_i| - |V_j|\big) \approx (c_i - c_j)^\top\varepsilon,\qquad
+\Delta|I_\ell| \approx \mathrm{Re}\!\left(\bar u_\ell\,(Y_b E)_\ell\right)\varepsilon,
+\end{equation}
+where $E$ maps $\varepsilon$ to the complex bus-voltage change, $Y_b$ stacks the branch admittance matrices
+$Y_f$ and $Y_t$ (current at each end of each branch, $I = Y_b V$) and $u_\ell = I_{\ell,0}/|I_{\ell,0}|$. The
+dependence between outputs is carried by the shared symbols: the form of a branch drop is the difference of the two
+bus forms, not the difference of two intervals. This is what makes branch quantities much tighter than any
+combination of bus intervals (Section~\ref{sec:cases}).
 
 \subsection{Exact second-order term}
-\plan{Coordenadas rectangulares: las ecuaciones son cuadráticas; $D = C\varepsilon - J^{-1}q(D)$;
-$\Delta|V_i| = c_i^\top\varepsilon + \varepsilon^\top H_i\varepsilon + O(\delta^3)$, con $H_i$ sin formar: un vector
-adjunto por barra (second\_order.py). Estado de segundo orden $\Delta V_1 + \Delta V_2$,
-$\Delta V_2 = -J^{-1}q(\Delta V_1)$, para las corrientes. Citar \cite{brucoli1985quadratic,sandoval2022second}:
-el modelo no es nuevo; lo nuevo es cómo se usa.}
+In rectangular coordinates the power-flow equations are exactly quadratic. Writing the state change as
+$D = C\varepsilon + D_2$, the quadratic part $q(\cdot)$ of the mismatch gives
+$D_2 = -J^{-1} q(C\varepsilon) + O(\delta^3)$, and for every bus
+\begin{equation}\label{eq:second}
+\Delta|V_i| = c_i^\top\varepsilon + \varepsilon^\top H_i\,\varepsilon + O(\delta^3).
+\end{equation}
+The matrices $H_i$ are never formed: $\varepsilon^\top H_i\varepsilon$ is evaluated for all buses at once from
+$\Delta V_1 = E\varepsilon$, the product $\Delta V_1\circ\overline{Y\Delta V_1}$ and one adjoint vector per bus,
+$J^{-\top}\partial|V_i|/\partial x$, computed once. Branch drops use the difference of two such terms. For currents,
+the second-order state $\Delta V_1 + \Delta V_2$, with $\Delta V_2 = -J^{-1}q(\Delta V_1)$, is propagated through
+$|I_0 + Y_b\,\Delta V|$, which keeps the modulus exact where $|I_0|$ is small. Quadratic and second-order
+probabilistic load flow models go back to \cite{brucoli1985quadratic} and have a modern analytic form in
+\cite{sandoval2022second}; what is new here is how the second-order term is used.
 
 % =============================================================================================================
 \section{Why moments are not enough}\label{sec:why}
-\plan{Sección corta, motivadora, con una figura. (a) A lo largo de una barra el término cuadrático es chico frente a
-$\sigma$, pero en las colas desplaza la cota; (b) su distribución es asimétrica y de cola pesada (asimetría
-cercana a $\pm2{,}7$, curtosis cercana a 13 en las ramas peores, diagnóstico de B4, sin CSV: generar la figura y su
-CSV); (c) corrección por media y varianza: falla en 15 de 25 celdas de PEGASE [§27.2,
-results/b4\_sweep.csv].}
-\plan{Figura~1: histograma del término cuadrático en una barra o caída típica de PEGASE frente a la normal de igual
-media y varianza; marcar el cuantil 99,865\,\%. Script por hacer: experiments/figures\_paper.py.}
+Existing second-order methods summarize the quadratic term by its moments or cumulants
+\cite{brucoli1985quadratic,sandoval2022second,liu2018holomorphic}. For bounds at the level $\alpha = 0.27\%$ this is
+not enough, because the quadratic term is strongly skewed and heavy-tailed (Fig.~\ref{fig:quadratic}). On PEGASE-2869
+at its design point, the median absolute skewness of the quadratic term is 1.68 over the 2357 buses and 1.43 over the
+3216 branch drops, and the median excess kurtosis is 4.38 and 3.53 \src{results/fig1\_quadratic\_stats.csv}. For
+98.9\% of the buses the skewness is negative: the long tail points to lower voltages, with a median minimum of
+$-6.9$ standard deviations. In the example of Fig.~\ref{fig:quadratic}a, the sampled maximum lies 11.2 standard
+deviations above the mean, where a normal law with the same mean and variance places its 99.865\% quantile at 3.0.
+
+The consequence is measured against the AC power flow over the whole load--dispersion grid of PEGASE-2869
+(Fig.~\ref{fig:sweep}). The first-order $3\sigma$ bound exceeds the nominal level in all 25 cells, with up to
+23.8\% violation; adding the mean and variance of the quadratic term still fails in all 25 (up to 2.4\%). Even a
+wider radius of at least $\sqrt{\chi^2_{2}(0.9973)}\,\sigma \approx 3.44\sigma$ fails in 15 of the 25 cells with the
+moment correction, and in none when the range of the quadratic term is added instead \src{RESULTS.md §27.2,
+results/b4\_sweep.csv}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig1_quadratic_term.pdf}
+\caption{Shape of the quadratic term $\varepsilon^\top H\varepsilon$ on PEGASE-2869 at the design point
+($\delta = 5\%$). (a) One branch drop: 20\,000 samples, standardized, against the normal law with the same mean and
+variance. (b) Skewness over all bus and branch-drop targets (4000 samples each).}
+\label{fig:quadratic}
+\end{figure}
 
 % =============================================================================================================
 \section{Bounds with the range of the second-order term}\label{sec:method}
 
 \subsection{Distribution-free radius of the linear part}
-\plan{Bernstein con soporte y varianza; Hoeffding con solo soporte \cite{hoeffding1963,boucheron2013concentration};
-tope por la caja afín $\sum_k|c_k|$. Explicar por qué no Chebyshev ni desigualdades para unimodales: quedan topadas
-por la caja afín [§28.4, results/b5\_radii.csv].}
-\begin{equation}
-r_\alpha = \frac{ML}{3} + \sqrt{\Big(\frac{ML}{3}\Big)^2 + 2\sigma^2 L}, \qquad L = \ln\frac{2}{\alpha},\quad
-M = \max_k |c_k|,\quad \sigma^2 = \sigma_\varepsilon^2\textstyle\sum_k c_k^2 .
+For a target with first-order coefficients $c$, the linear part $L = c^\top\varepsilon$ is a sum of independent,
+zero-mean terms bounded by $|c_k|$, with variance $\sigma^2 = \sigma_\varepsilon^2\sum_k c_k^2$. Bernstein's
+inequality \cite{boucheron2013concentration} gives $P(|L| > r_\alpha)\le\alpha$ for
+\begin{equation}\label{eq:bernstein}
+r_\alpha = \frac{ML}{3} + \sqrt{\Big(\frac{ML}{3}\Big)^2 + 2\sigma^2 L}, \qquad L = \ln\frac{2}{\alpha},\qquad
+M = \max_k |c_k| ,
 \end{equation}
+which we cap by the worst case of the linear model, $\sum_k|c_k|$. Hoeffding's inequality \cite{hoeffding1963},
+which uses the support only, gives a radius within 7\% of~\eqref{eq:bernstein} on PEGASE-2869 \src{RESULTS.md
+§28.4}. Bounds that use the variance only (Chebyshev, or the Gauss inequality for unimodal laws) are not useful
+here: at $\alpha = 0.27\%$ they reach the cap in most targets \src{results/b5\_radii.csv}.
 
 \subsection{Sampled range of the second-order term}
-\plan{Bound $[\,-r + \min(0,q_{\min}),\ r + \max(0,q_{\max})\,]$ con $q_{\min},q_{\max}$ extremos de $n$ muestras
-del término cuadrático (sin flujos de potencia). Una sola pasada para todos los objetivos (NonlinearSampler).}
+Let $Q$ be the second-order part of the target ($\varepsilon^\top H\varepsilon$, a difference of two such terms, or
+the remainder of $|I|$). We draw $n$ independent samples of $\varepsilon$, evaluate $Q$ for every target in the same
+pass, and keep its extremes $q_{\min}$ and $q_{\max}$. No power flow is solved: one pass needs the dense product
+$E\varepsilon$, one sparse product with $Y$, the adjoint products for the voltages and, for currents, one sparse
+triangular solve. The bound is
+\begin{equation}\label{eq:bound}
+\Big[\,-r + \min(0, q_{\min}),\; r + \max(0, q_{\max})\,\Big]
+\end{equation}
+around the converged AC value, with $r$ from~\eqref{eq:bernstein}.
 
 \subsection{A provable coverage level}
 \begin{proposition}\label{prop:cert}
 Under Assumption~\ref{as:sym}, let $Y = L + Q$ be a target of the second-order model, with $L = c^\top\varepsilon$
-and $Q$ its quadratic part. Let $q_{\min}, q_{\max}$ be the extremes of $n$ independent samples of $Q$, drawn
+and $Q$ its second-order part. Let $q_{\min}, q_{\max}$ be the extremes of $n$ independent samples of $Q$, drawn
 independently of $\varepsilon$, and let $r$ satisfy $P(|L| > r)\le\alpha_L$. Then
 \[
 P\Big(Y \notin \big[-r + \min(0,q_{\min}),\; r + \max(0,q_{\max})\big]\Big) \;\le\; \alpha_L + \frac{2}{n+1}.
@@ -170,18 +224,21 @@ P\Big(Y \notin \big[-r + \min(0,q_{\min}),\; r + \max(0,q_{\max})\big]\Big) \;\l
 \begin{proof}
 If $|L|\le r$, $Q\le q_{\max}$ and $Q\ge q_{\min}$, then $Y\le r + \max(0,q_{\max})$ and
 $Y\ge -r + \min(0,q_{\min})$. Hence the event in the statement is contained in
-$\{|L|>r\}\cup\{Q>q_{\max}\}\cup\{Q<q_{\min}\}$. The new $Q$ and the $n$ samples are exchangeable, so the probability
-that the new one is the strict maximum of the $n+1$ values is at most $1/(n+1)$; the same holds for the minimum.
-The union bound gives the result.
+$\{|L|>r\}\cup\{Q>q_{\max}\}\cup\{Q<q_{\min}\}$. The new value of $Q$ and the $n$ samples are exchangeable, so the
+probability that the new one exceeds all the others is at most $1/(n+1)$, and the same holds for falling below all
+of them. The union bound gives the result.
 \end{proof}
-\plan{Corolario: con $\alpha_L = \alpha - 2/(n+1)$ la cota tiene nivel $\alpha$; con $n = 4000$ el ancho sube 2{,}2\,\%
-en mediana [§28.12, results/b11\_certified.csv]. Aclarar que la garantía es para el modelo de segundo orden; el
-tercer orden se mide contra AC.}
+\noindent Choosing $\alpha_L = \alpha - 2/(n+1)$ in~\eqref{eq:bernstein} therefore gives level $\alpha$ for the
+second-order model. With $n = 4000$, $\alpha_L = 0.22\%$ and the bounds widen by 2.2\% in median over the uncertified
+ones \src{RESULTS.md §28.12}. The probability is over the samples as well as over the new realization. The argument
+does not cover the third and higher orders; their effect is measured against the AC power flow in
+Section~\ref{sec:cases}.
 
 \subsection{Algorithm and cost}
-\plan{Pseudocódigo de 6 pasos: (1) punto AC; (2) LU y formas afines; (3) modelo de segundo orden; (4) $n$ muestras
-de los términos no lineales en una pasada; (5) radios; (6) cotas. Tabla de costos [§28.12,
-results/b11\_timing.csv]: 6,7\,s voltajes, 10,2\,s con corrientes en PEGASE-2869.}
+\plan{Pseudocódigo: (1) punto AC; (2) LU dispersa y formas afines~\eqref{eq:forms}; (3) modelo de segundo orden;
+(4) $n$ muestras de $Q$ para todos los objetivos en una pasada; (5) radios~\eqref{eq:bernstein} con $\alpha_L$;
+(6) cotas~\eqref{eq:bound}. Tabla de costos [§28.12, results/b11\_timing.csv]: PEGASE-2869, 6,7\,s para voltajes y
+caídas y 10,2\,s con las 9118 puntas de rama.}
 
 % =============================================================================================================
 \section{Case studies}\label{sec:cases}
@@ -198,13 +255,29 @@ Software y versiones (README.md).}
 y con el rango, en las 3 celdas de los 4 sistemas [§28.8, results/b8\_ppf\_baselines.csv].}
 
 \subsection{Coverage across loading and dispersion}
-\plan{Figura~2: mapa carga × $\delta$ de la peor violación para 3$\sigma$, momentos y rango (PEGASE-2869)
-[§27.2, §28.3, results/b4\_sweep.csv, b5\_sweep.csv]. Tabla con los dos sistemas nuevos [§28.7, b7\_generality.csv].}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2_sweep.pdf}
+\caption{Worst bus-voltage violation against 20\,000 AC samples per cell on PEGASE-2869, over load factor (up to 95\%
+of the loadability limit) and dispersion. Cells outlined exceed the nominal 0.27\%. (a) First-order $3\sigma$ bound.
+(b) $3\sigma$ with the mean and variance of the quadratic term. (c) Proposed bound: Bernstein radius plus the sampled
+range of the second-order term.}
+\label{fig:sweep}
+\end{figure}
+\plan{Texto: la Fig.~\ref{fig:sweep} y la tabla con los dos sistemas nuevos [§28.3, §28.7, b5\_sweep.csv,
+b7\_generality.csv].}
 
 \subsection{Branch voltage drops and branch currents}
 \plan{Tabla: caídas (forma afín frente a restar intervalos, 4 a 21 veces) [§28.1, b5\_mc.csv, b5\_width.csv];
 corrientes (error lineal hasta 10,7\,p.u.; sin el rango, hasta 90\,\% de violación; con el rango, 0) [§28.9,
-b9\_branch\_currents.csv]. Figura~3: ancho de la cota de corriente frente a $|I_0|$.}
+b9\_branch\_currents.csv].}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig3_currents.pdf}
+\caption{Branch currents: worst violation over the three cells of Table~X (design point; load 1.2 with
+$\delta = 30\%$; 95\% of the loadability limit with $\delta = 15\%$), against 20\,000 AC samples per cell.}
+\label{fig:currents}
+\end{figure}
 
 \subsection{Correlated sources and non-uniform distributions}
 \plan{[§28.6, b6\_correlated.csv]: factores compartidos cubren, la concentración se pierde con un factor común
