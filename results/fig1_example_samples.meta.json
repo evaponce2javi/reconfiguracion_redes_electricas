@@ -1,0 +1,21 @@
+{
+  "table": "fig1_example_samples",
+  "script": "figures_paper.py",
+  "generated_utc": "2026-11-27T00:32:47+00:00",
+  "git_commit": "0fd2d05",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "system": "pegase2869",
+  "target": "drop",
+  "index": 161,
+  "branch_from_pq": 1447,
+  "branch_to_pq": 2088,
+  "n_samples": 20000,
+  "seed": 2576763395,
+  "note": "samples of the quadratic term of the example drop"
+}

@@ -1,0 +1,17 @@
+{
+  "table": "b8_ppf_baselines",
+  "script": "b8_ppf_baselines.py",
+  "generated_utc": "2026-11-26T16:51:40+00:00",
+  "git_commit": "e508592",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "n_samples": 20000,
+  "alpha": 0.0027000000000000357,
+  "n_surrogate": 1000,
+  "note": "cumulant_cf: linear model, Cornish-Fisher; pem_cf: Hong 2m+1 on AC, Cornish-Fisher; t_method_s for pem_cf is its 2m AC solutions; for bern/sig3 it is the second-order model and the range"
+}

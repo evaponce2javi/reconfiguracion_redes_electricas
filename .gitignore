@@ -3,3 +3,13 @@ __pycache__/
 .venv/
 .pytest_cache/
 data/*.m
+# LaTeX build products of paper/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.spl
+paper/*.pdf

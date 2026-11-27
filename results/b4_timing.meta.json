@@ -1,0 +1,14 @@
+{
+  "table": "b4_timing",
+  "script": "b4_second_order.py",
+  "generated_utc": "2026-11-26T13:19:25+00:00",
+  "git_commit": "823c13f",
+  "versions": {
+    "python": "3.13.18",
+    "pandapower": "3.5.6",
+    "numpy": "2.4.6",
+    "scipy": "1.18.1",
+    "platform": "Linux-6.18.44-fc-v880-x86_64-with-glibc2.39"
+  },
+  "note": "single process; run alone. Thread variables are set after NumPy is imported, so BLAS may still use several threads"
+}

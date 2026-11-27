@@ -39,6 +39,8 @@ class Grid:
     base_pf_seconds: float    # wall time of one (warm) pandapower base power flow
     source: str = ""          # where the data came from (and a hash for downloaded files)
     base_kv: np.ndarray | None = None     # nominal voltage of every bus [kV]
+    Yf: sp.csr_matrix | None = None       # branch current at the from / to end of every in-service branch: I = Yf V
+    Yt: sp.csr_matrix | None = None
 
     @property
     def n_bus(self) -> int:
@@ -207,7 +209,9 @@ def load_grid(case: str, data_dir: Path = DATA_DIR, tol: float = 1e-9, prepare=N
 
     pvpq = np.concatenate([pv, pq])
     grid = Grid(case, base, Ybus, ref, pv, pq, V0, s_gen, s_load, v_set, br_f, br_t, label, t_pf, source,
-                np.asarray(bus[:, BASE_KV].real, dtype=float))
+                np.asarray(bus[:, BASE_KV].real, dtype=float),
+                Yf=sp.csr_matrix(ppci["Yf"])[np.flatnonzero(live)] if "Yf" in ppci else None,
+                Yt=sp.csr_matrix(ppci["Yt"])[np.flatnonzero(live)] if "Yt" in ppci else None)
     res = np.max(np.abs(stack_mismatch(mismatch(Ybus, V0, grid.sbus()), pvpq, pq)))
     if res > 1e-5:
         raise RuntimeError(f"extracted model is inconsistent with the pandapower solution (mismatch {res:.2e})")

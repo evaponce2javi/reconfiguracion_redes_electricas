@@ -76,9 +76,8 @@ class SecondOrder:
         alpha = np.zeros((2 * m, npq))
         alpha[col[pq], np.arange(npq)] = er[:, 0]
         alpha[m + col[pq], np.arange(npq)] = ei[:, 0]
-        beta = np.empty_like(alpha)                                  # J^-T alpha, one column per PQ bus
-        for s in range(0, npq, 32):
-            beta[:, s:s + 32] = lu.solve(np.ascontiguousarray(alpha[:, s:s + 32]), trans="T")
+        beta = solve_blocked(lu, alpha, block=32, threads=1, trans="T")   # J^-T alpha, one column per PQ bus (the
+        # transposed SuperLU solve does not run faster in threads: measured 0.7 s serial against 1.9 s threaded on PEGASE-2869)
         gam = np.zeros((n, npq), complex)                            # weight of q_m in d|V_i|
         gam[ns] = beta[:m]
         gam[pq] -= 1j * beta[m:m + npq]
@@ -95,6 +94,23 @@ class SecondOrder:
         out = -(self.gam.T @ z).real + (self.c_perp @ eps) ** 2 / (2.0 * self.vm[:, None])
         if self.has_pv:
             out -= self.bv.T @ (a.real ** 2 + a.imag ** 2)
+        return out
+
+    def state(self, eps):
+        """Complex bus-voltage change to second order, dV1 + dV2 with dV2 = -J^-1 q(dV1), shape (n_bus, B).
+
+        q is the quadratic part of the power-flow equations in rectangular coordinates, row by row as J:
+        Re(dV conj(Y dV)) at PV and PQ buses, Im(.) at PQ buses, |dV|^2 at PV buses."""
+        g = self.st.grid
+        ns, pq = g.pvpq, g.pq
+        a = self.E @ eps
+        z = a * np.conj(self.Y @ a)
+        rows = [z.real[ns], z.imag[pq]]
+        if self.has_pv:
+            rows.append(np.abs(a[g.pv]) ** 2)
+        d2 = -solve_blocked(self.lu, np.vstack(rows))
+        out = a.copy()
+        out[ns] += d2[:self.m] + 1j * d2[self.m:]
         return out
 
     def trace(self):

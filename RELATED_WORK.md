@@ -406,3 +406,154 @@ prueba de ausencia: no hubo acceso a la búsqueda en texto completo de IEEE Xplo
 5. Messine y Touhami (2006) y Ninin, Messine y Hansen (2015), para ubicar el k-nomial.
 6. Luo, Shi y Ni (2018): qué es la aritmética afín "extendida".
 7. La Ref. [12], que sigue sin PDF.
+
+---
+
+## Quinta pasada: la capa probabilística (versión de formas afines, experimentos B4 y B5)
+
+Pregunta: ¿está publicado acotar |V| por barra y cantidades de rama con la forma afín de sensibilidades en el
+punto AC, un radio de concentración que no supone normalidad (Bernstein) y una corrección de segundo orden del
+error de linearización, validado contra AC a escala de transmisión? Búsqueda del 26-11-2026, no exhaustiva:
+nueve búsquedas web y dos artículos leídos completos. Niveles: **TC** texto completo, **R** solo resumen o
+fragmentos del buscador.
+
+| Trabajo | Qué hace | Distribución | Linearización | Mayor sistema / validación | Nivel |
+|---|---|---|---|---|---|
+| Roald y Andersson (2019), IEEE TPWRS 33(3), arXiv 1706.03241 | CC-AC-OPF: el punto previsto con AC completo; el efecto de la incertidumbre linealizado en ese punto. Restricciones de azar sobre **voltajes, corrientes de rama** y generación. Márgenes analíticos o por Monte Carlo, iterando | Gaussiana (Φ⁻¹); dicen que se puede cambiar por reformulaciones distribucionalmente robustas ([29] del artículo) | Primer orden. Escriben que "la imprecisión por la distribución es del mismo orden que la del error de linealización". No corrigen el segundo orden | Polaco 2.383 barras con 941 cargas inciertas; pruebas dentro y fuera de muestra | TC |
+| Lubin, Dvorkin y Roald (2019), IEEE TPWRS, arXiv 1803.08754 | CC-AC-OPF como SOCP; restricciones cuadráticas de azar para la potencia aparente | Gaussiana, extensible con DRO | Primer orden en el punto AC | IEEE 118 | TC |
+| Halilbasic, Pinson y Chatzivasileiadis (2019), IEEE TPWRS, arXiv 1804.05754 | Relajación SOC del CC-AC-OPF y ajustes por Taylor de primer orden; recuperación de factibilidad AC | — | Primer orden; reconocen el error de linealización como fuente de imprecisión | — | R |
+| Summers et al. (2016), NAPS | Regulación de voltaje con restricciones de azar tipo Chebyshev desde media y covarianza estimadas en línea | Sin distribución (solo momentos) | Flujo AC linealizado | Distribución | R (el PDF redirige a otro sitio) |
+| Li, Jiang y Mathieu (2019), IEEE TCNS, arXiv 1811.10217 | OPF distribucionalmente robusto con momentos y unimodalidad | DRO, menos conservador que Chebyshev | — | — | R |
+| Talkington et al. (2025), arXiv 2510.17798 | Desigualdades de concentración matriciales (Bernstein matricial) para el espectro de la admitancia con **parámetros de red** inciertos; errores de DC y LinDistFlow | Concentración | No es incertidumbre de inyección | Redes IEEE | R |
+| Bouissou, Goubault, Putot et al. (2016), TACAS | Formas afines probabilísticas con desigualdades de concentración (ya en la primera pasada) | Concentración | — | Sin aplicación a sistemas de potencia | R |
+| Pirnia, Cañizares, Bhattacharya, Vaccaro (2012-2014) | Flujo de potencia y OPF con aritmética afín frente a Monte Carlo: cotas algo más anchas que el rango de MC, sin suponer distribución | Ninguna (peor caso) | Aritmética afín | 1.211 barras | R |
+| Nemirovski y Shapiro (2006), SIAM J. Optim. | "Aproximación de Bernstein" de restricciones de azar, convexa | Concentración (cotas de la función generadora de momentos) | — | No es de sistemas de potencia; no encontré quién la aplique a OPF | R |
+| Flujo probabilístico por cumulantes (Usaola 2009 y otros) | Momentos de salida desde la linealización y expansión de Gram-Charlier o Cornish-Fisher | Reconstruye la distribución | Primer orden; la linealización se nombra como su principal limitación | — | R |
+| PPF acelerado, arXiv 2010.14995 | Las ecuaciones son cuadráticas en coordenadas cartesianas: el desarrollo de segundo orden es exacto ahí | — | Hessiana constante en un modelo reducido | Distribución | R |
+
+### Qué ya está publicado
+
+- **Linealizar en el punto AC y acotar voltajes y corrientes de rama con un cuantil analítico** es la reformulación
+  analítica de Roald y Andersson. El "3σ" de este repositorio es esa misma reformulación gaussiana. Ellos ya
+  señalan que el error por la distribución y el de linealización son del mismo orden.
+- **Reformulaciones sin suponer distribución** con momentos (Chebyshev, Cantelli, DRO, unimodalidad) son
+  corrientes en CC-OPF.
+- **Concentración sobre formas afines** está publicada en análisis de programas (Bouissou et al., 2016).
+- **El peor caso con aritmética afín** frente a Monte Carlo está publicado (Pirnia, Vaccaro).
+
+### Qué no apareció
+
+1. **Corrección de segundo orden del error de linealización en cotas probabilísticas de voltaje a escala de
+   transmisión**, usando el rango del término cuadrático (asimétrico y de cola pesada, que un ajuste de media y
+   varianza no captura: B4) en vez de iterar con Monte Carlo AC.
+2. **Bernstein (soporte acotado más varianza) sobre la forma afín de |V|** como radio sin suponer distribución.
+   Es una desigualdad de libro y la idea está en Bouissou; lo nuevo sería la aplicación y su medición frente a
+   Chebyshev y Gauss.
+3. **Caídas de voltaje por rama desde la forma afín de la diferencia**, y cuánto ganan frente a restar
+   intervalos (B5: 4 a 21 veces). Roald y Andersson sí acotan corrientes de rama con la forma lineal, así que la
+   idea general de cantidades de rama no es nueva: lo medible es la ganancia y la validación.
+4. **Medición de que la caja de peor caso de segundo orden no encierra la solución AC en los vértices** de una red
+   de 2.869 barras (B5). Ya estaba anotado en las secciones 17 y 18 de RESULTS.md para el primer orden.
+
+### Lo que falta para cerrar esta pasada
+
+- Leer completo Roald, Oldewurtel, Van Parys y Andersson (2015), con DRO, y la referencia [29] de Roald y
+  Andersson. Son la comparación natural para el radio sin distribución: hay que medir Bernstein frente a Cantelli
+  (que solo usa la varianza) en los mismos casos.
+- Buscar en IEEE Xplore o Scopus "second-order" junto con "chance constraint" y "voltage", y flujo probabilístico
+  con Hessiana a escala de transmisión. El buscador web no basta para descartar.
+- Leer Summers et al. (2016) completo.
+
+---
+
+## Sexta pasada: estado del arte de la contribución principal (26-11-2026)
+
+**Método.** Búsqueda en OpenAlex (indexa IEEE, Elsevier, IET, MDPI y otros, con resúmenes) por título y resumen,
+veinte consultas booleanas ordenadas por relevancia y por citas: segundo orden o Hessiana en flujo
+probabilístico; error de linealización en restricciones de azar y en flujo probabilístico; desigualdades de
+concentración en sistemas de potencia; radios sin distribución para voltaje; cumulantes, estimación por puntos y
+punto de silla con atención a las colas; caos polinomial y procesos gaussianos; aritmética afín probabilística;
+caídas de voltaje y corrientes de rama con incertidumbre. 154 trabajos en la primera ronda y unos 170 en la
+segunda. Se leyeron los resúmenes de los cercanos; ninguno de los nuevos se leyó completo. **No reemplaza una
+búsqueda en IEEE Xplore o Scopus**: OpenAlex no tiene resumen de todos los artículos de Elsevier (por ejemplo, el
+de 1985) y su búsqueda por texto es menos fina.
+
+### Los trabajos más cercanos
+
+| Trabajo | Qué hace | Diferencia con la propuesta | Nivel |
+|---|---|---|---|
+| Brucoli, Torelli, Napoli (1985), "Quadratic probabilistic load flow with linearly modelled dispatch", IJEPES, doi 10.1016/0142-0615(85)90042-0 | Flujo probabilístico con el modelo cuadrático | Antecedente clásico del segundo orden; sin resumen en OpenAlex ni acceso abierto | Ficha |
+| "The algorithm of probabilistic load flow retaining nonlinearity" (2002), PowerCon, doi 10.1109/icpst.2002.1047154 | Serie de Taylor con términos no lineales; esperanza y varianza; IEEE 14 | Momentos, no colas | R |
+| Sandoval, Gong, Chung (2022), "Three-phase second-order analytic probabilistic load flow with voltage-dependent load", IEEE TPWRS, doi 10.1109/tpwrs.2022.3159392 | Modelo cuadrático exacto por inyección de corriente; **los dos primeros momentos** de voltaje y corriente; distribución | **Es el antecedente directo del segundo orden.** Usa momentos; B4 muestra que corregir con media y varianza no basta al 0,27 % (falla en 15 de 25 celdas de PEGASE). Distribución, una red práctica | R |
+| Liu, Sun, Wang, Ju (2018), "Probabilistic power flow analysis using multidimensional holomorphic embedding and generalized cumulants", IEEE TPWRS, doi 10.1109/tpwrs.2018.2846203 | Solución AC analítica no lineal; cumulantes y Gram-Charlier; "mejores colas" | Otra vía a la no linealidad; IEEE 30; la cola sale de Gram-Charlier, que B8 sugiere poco fiable lejos en la cola | R |
+| Basirat, Mohammadi, Keihan Asl (2026), "Second order exponential asymptotic expansion for probabilistic load flow analysis", IJEPES, doi 10.1016/j.ijepes.2026.111582 | Expansión de segundo orden, costo independiente del número de variables, CDF sin integrar | Distribuciones, no cotas de cobertura; IEEE 14 y 118 | R |
+| Roald y Andersson (2019), IEEE TPWRS (quinta pasada) | Linealización en el punto AC, cuantil gaussiano, márgenes por Monte Carlo iterando | Primer orden; el error de linealización se corrige con Monte Carlo AC, no con el modelo cuadrático | TC |
+| "Convex relaxations and approximations of chance-constrained AC-OPF problems" (2019), IEEE TPWRS | Ajustes por Taylor de primer orden | Primer orden | R |
+| "Asymptotically tight conic approximations for chance-constrained AC OPF" (2022), EJOR, doi 10.1016/j.ejor.2022.06.020 | Aproximación cónica de restricciones de azar bilaterales | Optimización; sin resumen en OpenAlex | Ficha |
+| "Sequential convex approximation approach for CC-ACOPF under arbitrary random distribution" (2026), IEEE TPWRS, doi 10.1109/tpwrs.2026.3670499 | Restricciones de azar con distribuciones arbitrarias, polinomios de Bernstein (no la desigualdad) | Optimización y muestreo; "Bernstein" es otra cosa | R |
+| "Nonparametric probabilistic load flow with saddle point approximation" (2017), IEEE TSG | Punto de silla para las colas | Lineal; colas aproximadas, sin garantía | Ficha |
+| "Risk assessment of rare events in probabilistic power flow via hybrid multi-surrogate method" (2019), IEEE TSG, doi 10.1109/tsg.2019.2940928 | Caos polinomial más reevaluación AC de las colas | Muestreo con el modelo completo en la cola; costo mayor | R |
+| Singh, Moger, Jena (2025), "A modified point estimate-based probabilistic load flow approach for improving tail accuracy", EPSR, doi 10.1016/j.epsr.2025.111606 | Estimación por puntos modificada para las colas | **Hay que leerlo**: es el intento más reciente de arreglar la cola de la estimación por puntos | Ficha |
+| "Safety screening for voltage control in active distribution grids via distributionally robust conformal screening" (2026), arXiv | Cobertura por predicción conforme | Basado en muestras; distribución | Ficha |
+| "Probabilistic interval power flow ... correlation of distributed wind power" (2024), IJEPES, doi 10.1016/j.ijepes.2024.109827 | Aritmética afín más teoría de la evidencia; correlación con paralelogramo, polígono o elipse | Correlación como restricción geométrica; distribución | R |
+
+### Cómo queda el aporte
+
+- **No se puede reclamar "flujo probabilístico de segundo orden"**: existe desde 1985 y en TPWRS 2022 en forma
+  analítica. Hay que citarlo y diferenciarse.
+- **Lo que no apareció en ninguna de las dos rondas**:
+  1. usar **el rango** del término de segundo orden, no sus momentos, para que una cota linealizada cubra al nivel
+     del 0,27 %, con la evidencia de que los momentos no bastan (B4) y de por qué (asimetría y cola);
+  2. combinarlo con un radio de concentración que solo supone independencia y soporte acotado, en vez de un cuantil
+     gaussiano o una expansión de Cornish-Fisher o Gram-Charlier;
+  3. validarlo contra AC en las colas a escala de transmisión (4 sistemas, hasta 2.869 barras, hasta el 95 % del
+     límite de cargabilidad), junto con los métodos publicados (cumulantes, estimación por puntos) que no cubren;
+  4. corrientes de rama y caídas de voltaje con la misma construcción.
+- **Riesgo:** el artículo de TPWRS 2022 también calcula corrientes. Hay que leerlo completo para saber si reporta
+  cobertura de cuantiles extremos o solo momentos y densidades.
+
+### Lo que hay que leer completo antes de redactar
+
+1. TPWRS 2022, segundo orden analítico: qué cuantiles reporta y en qué red.
+2. EPSR 2025, estimación por puntos para las colas.
+3. Brucoli, Torelli y Napoli (1985): ver qué momentos usa (está tras muro de pago).
+4. IJEPES 2026, expansión asintótica de segundo orden.
+5. TPWRS 2018, holomorphic embedding con cumulantes: si mide el error en la cola.
+
+Acceso: los de 2022 (TPWRS), 2018 (TPWRS) y 1985 (IJEPES) no tienen versión abierta. Los de IJEPES 2026 y EPSR 2025
+figuran como abiertos en OpenAlex, pero ScienceDirect y SSRN rechazan la descarga automática (HTTP 403); hay que
+bajarlos a mano.
+
+**Lo que sigue haciendo falta de los autores:** una búsqueda en IEEE Xplore o Scopus con acceso a texto completo.
+Consultas sugeridas: ("second-order" OR quadratic) AND ("probabilistic power flow" OR "probabilistic load flow")
+AND (quantile OR tail OR "confidence interval"); y "linearization error" AND "chance constraint" AND voltage AND
+(quadratic OR Hessian).
+
+### Lectura completa de los cinco más cercanos (PDF entregados por los autores, 26-11-2026)
+
+| Trabajo | Modelo | Qué propaga | Entradas | Cómo valida | Sistemas |
+|---|---|---|---|---|---|
+| Brucoli, Torelli, Napoli (1985), IJEPES | Segundo orden del flujo **y de las corrientes de línea**, con despacho lineal | Medias y desviaciones típicas por el método de momentos ("noniterative computation of the means and standard deviations") | Cargas normales | Sin Monte Carlo; dos sistemas de ejemplo | Pequeños |
+| Sandoval, Gong, Chung (2022), IEEE TPWRS | Cuadrático exacto en forma de inyección de barra, con Hessiana; carga ZIP aleatoria | Los dos primeros momentos (modelo "second-order second-moment"); cumulantes de orden mayor con una fórmula que supone entradas gaussianas | Gaussianas, condicionadas en series de tiempo | Error de momentos y densidades frente a Monte Carlo de 10⁵ muestras; asimetría y curtosis en una barra; **sin cuantiles extremos ni cobertura** | IEEE 37 barras trifásico |
+| Liu, Sun, Wang, Ju (2018), IEEE TPWRS | Solución AC analítica no lineal (holomorphic embedding), serie truncada | Cumulantes generalizados y densidad por Gram-Charlier | Paramétricas o datos; con covarianza | Curvas de densidad y distribución frente a Monte Carlo; la "mejor cola" se muestra en figuras | IEEE 30 |
+| Basirat, Mohammadi, Keihan Asl (2026), IJEPES | **Mapeo lineal** A = J⁻¹∇L (primer orden); el "segundo orden" es de la expansión asintótica de la densidad, tipo punto de silla | Función generadora de cumulantes; densidad y distribución sin integrar | Cualquier distribución, sin suponer normalidad | Densidad y distribución frente a Monte Carlo de 20.000 muestras y frente a punto de silla; colas comparadas en figuras | IEEE 14 y 118 |
+| Singh, Moger, Jena (2025), EPSR | Estimación por puntos de Hong con dos puntos extra en las colas (equivale a 4n+1 con momentos reducidos); Nataf para correlación | Momentos hasta el cuarto; densidad por Gram-Charlier | Viento, con correlación | Momentos y curvas frente a Monte Carlo de 10.000 muestras | Equivalentes de 24 y 72 barras |
+
+**Lo que confirma la lectura:**
+
+- **Segundo orden, incluidas las corrientes de línea, existe desde 1985.** No se puede presentar el modelo
+  cuadrático ni su aplicación a corrientes como aporte; hay que citar a Brucoli et al. (1985) y a Sandoval et al.
+  (2022).
+- **Ninguno de los cinco reporta cobertura de cuantiles extremos ni la probabilidad de que la cota sea violada.**
+  Validan momentos o curvas de densidad, con referencias de 10⁴ a 10⁵ muestras, y miden las colas a la vista.
+- **Ninguno usa el rango del término de segundo orden.** Todos lo resumen por momentos o cumulantes, y la mayoría
+  suponen entradas gaussianas para el segundo orden.
+- **Ninguno usa un radio sin supuesto de distribución.**
+- **El mayor sistema es de 118 barras.** El único trabajo a escala de transmisión es Roald y Andersson (2.383
+  barras), que es de primer orden.
+- Basirat et al. (2026) no es de segundo orden en el flujo: el segundo orden está en la aproximación de la densidad.
+
+**Aporte reformulado, defendible frente a estos cinco:** las cotas de cobertura al nivel del 0,27 % requieren el
+rango del término de segundo orden, no sus momentos (B4: los momentos fallan en 15 de 25 celdas de PEGASE). Con
+ese rango y un radio de concentración, las cotas linealizadas cubren frente a AC en voltajes, caídas y corrientes
+hasta 2.869 barras, donde cumulantes, estimación por puntos y 3σ no cubren (B8, B9).

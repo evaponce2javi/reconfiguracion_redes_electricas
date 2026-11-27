@@ -74,3 +74,27 @@ def test_error_after_the_quadratic_term_is_third_order(model):
         errs.append(np.abs(ac_dv(st, eps, dl) - so.c_lin @ eps - so.quadratic(eps)).max())
     assert errs[0] / errs[1] == pytest.approx(8.0, rel=0.3)
     assert errs[1] / errs[2] == pytest.approx(8.0, rel=0.3)
+
+
+@pytest.mark.parametrize("case", ["case33bw", "case118"])
+def test_branch_admittances_and_second_order_state(case):
+    import scipy.sparse as sp
+    g = _grid(case)
+    nb, n = g.Yf.shape[0], g.n_bus
+    Cf = sp.csr_matrix((np.ones(nb), (np.arange(nb), g.br_f)), shape=(nb, n))
+    Ct = sp.csr_matrix((np.ones(nb), (np.arange(nb), g.br_t)), shape=(nb, n))
+    D = (Cf.T @ g.Yf + Ct.T @ g.Yt - g.Ybus).tocoo()                 # only bus shunts may remain
+    assert np.all(np.abs(D.data[D.row != D.col]) < 1e-9)
+    st = make_study(g)
+    delta = 0.1 if case == "case33bw" else 0.05
+    so = SecondOrder(st, delta)
+    eps = sample_eps(np.random.default_rng(3), st.src.n, 50)
+    dv = so.state(eps)
+    ac = ac_dv(st, eps, delta)
+    V, _, _ = st.solver.solve(st.injections(eps, delta))
+    i_lin = np.abs(g.Yf @ (st.V_star[:, None] + so.E @ eps))
+    i_so = np.abs(g.Yf @ (st.V_star[:, None] + dv))
+    i_ac = np.abs(g.Yf @ V)
+    assert np.abs(i_so - i_ac).max() < 0.05 * np.abs(i_lin - i_ac).max()  # the second-order state removes most of the error
+    vm = np.abs(st.V_star[g.pq, None] + dv[g.pq]) - st.vm_star[:, None]
+    assert np.abs(vm - ac).max() < 0.2 * np.abs(so.c_lin @ eps - ac).max()

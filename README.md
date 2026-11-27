@@ -26,7 +26,7 @@ Probado con Python 3.12.10, pandapower 3.5.6, NumPy 2.4.6 y SciPy 1.18.1.
 python -m cdhim ieee33                       # resumen del método en el punto de diseño
 python -m cdhim pegase2869 --radius coordinate --csv cotas.csv
 python -m cdhim ieee33 --legacy              # reproduce las cifras del manuscrito enviado
-python -m pytest                             # 315 pruebas unitarias
+python -m pytest                             # 326 pruebas unitarias
 python experiments/run_all.py                # regenera todos los CSV de results/ (2 a 2,5 h; C1 es lo más lento)
 python experiments/run_all.py b1 c5          # solo algunos experimentos
 python experiments/run_all.py x1             # exploratorio: resto de segundo orden y aritmética afín (unos 20 min)
@@ -36,6 +36,17 @@ python experiments/run_all.py x8             # opción A: encierros en redes de 
 python experiments/run_all.py x9 x10         # baseline de Krawczyk y red trifásica desbalanceada (secciones 26.1 y 26.7)
 python experiments/run_all.py x12            # encierro verificado, referencia certificada y subdivisión (unas 2 h; usa los módulos de x9 y x10)
 python experiments/run_all.py x13 x14        # escala (más de 1 h, a solas para los tiempos; descarga 3 casos de MATPOWER) y barras PV
+python experiments/run_all.py b4 b5          # corrección de segundo orden (B4: punto de diseño, barrido y tiempos, unas 2,5 h) y formas afines (B5: punto de diseño)
+python experiments/b5_affine_forms.py sweep  # B5: barrido carga x delta (unas 2 h); también: surrogate, radii
+python experiments/b6_correlated.py          # B6: fuentes correlacionadas como símbolos compartidos (unos 30 min)
+python experiments/b7_generality.py          # B7: cobertura simultánea e IEEE-118 / PEGASE-1354 (unas 2 h)
+python experiments/b8_ppf_baselines.py       # B8: cumulantes y estimación por puntos (unos 40 min)
+python experiments/b9_branch_currents.py     # B9: corrientes de rama (unos 40 min)
+python experiments/b10_marginals.py          # B10: distribuciones no uniformes (unos 30 min)
+python experiments/b12_gaussian_variant.py   # B12: variante angosta sin garantía (unos 40 min); también: timing
+python experiments/figures_paper.py compute  # datos de la Fig. 1 del paper (forma del término cuadrático)
+python experiments/figures_paper.py          # figuras del paper en paper/figures/
+python experiments/tables_paper.py           # tablas del paper en paper/tables/
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```
@@ -66,8 +77,10 @@ de muestra, el script que lo generó y las versiones de las librerías.
 | `cdhim/certified.py` | Referencias certificadas: puntos interiores verificados y rango exacto por bisección de la caja (sección 26.4). |
 | `cdhim/krawczyk.py` | Línea base intervalar: operador de Krawczyk paramétrico, por desbalance de potencia o por inyección de corriente (sección 26.1). |
 | `cdhim/threephase.py` | Redes trifásicas desbalanceadas en el dominio de fases, con cargas en estrella (sección 26.7). |
+| `cdhim/correction.py` | Corrección de segundo orden de las cotas CD-HIM: media exacta, varianza y rango muestreados del término cuadrático, q en los vértices, elipse exterior a E + rango (sección 27). |
+| `cdhim/affine_forms.py` | Salidas desde las formas afines sin elipse: barras y caídas por rama, radios afín y de Bernstein, modelo de segundo orden por objetivo sin formar H, búsqueda del peor vértice (sección 28). |
 | `cdhim/knomial.py` | RAA-K: reescritura k-nomial por presupuesto diagonal y su cota. Port de `ibex-lib/raak/affine/ibex_KNomial.h`, validado contra `tests/data/knomial_golden.txt`. |
-| `experiments/` | Un script por experimento (B1 a C8), `build_report.py` (arma RESULTS.md) y `figures.py`. Los scripts `x1_` a `x14_` son de la versión de aritmética afín (secciones 17 a 26 de RESULTS.md): no los pidieron los revisores. `report_x12.py` arma las tablas de la sección 26. |
+| `experiments/` | Un script por experimento (B1 a C8; B4 y B5 son posteriores a la revisión: secciones 27 a 29), `build_report.py` (arma RESULTS.md) y `figures.py`. Los scripts `x1_` a `x14_` son de la versión de aritmética afín (secciones 17 a 26 de RESULTS.md): no los pidieron los revisores. `report_x12.py` arma las tablas de la sección 26. |
 | `tests/` | Pruebas unitarias. |
 | `finalFinalCode.py` | Código original, sin modificar. Se conserva como referencia de la auditoría. |
 
