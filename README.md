@@ -45,6 +45,7 @@ python experiments/b9_branch_currents.py     # B9: corrientes de rama (unos 40 m
 python experiments/b10_marginals.py          # B10: distribuciones no uniformes (unos 30 min)
 python experiments/figures_paper.py compute  # datos de la Fig. 1 del paper (forma del término cuadrático)
 python experiments/figures_paper.py          # figuras del paper en paper/figures/
+python experiments/tables_paper.py           # tablas del paper en paper/tables/
 python experiments/build_report.py           # reconstruye RESULTS.md a partir de los CSV
 python experiments/figures.py                # figuras en results/figures/
 ```

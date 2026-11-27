@@ -6,6 +6,7 @@ Revista objetivo: **International Journal of Electrical Power & Energy Systems (
 |---|---|
 | `main.tex` | Esqueleto con la clase `elsarticle`: título, resumen y highlights en borrador; la proposición de cobertura con su prueba; el plan de cada sección en rojo (`\plan`, `\nota`) y la fuente de cada cifra en azul (`\src`). |
 | `refs.bib` | Bibliografía del kit de CD-HIM más las referencias nuevas (DOI verificados en OpenAlex). Las marcadas `TODO: verify` hay que revisarlas. |
+| `tables/` | Tablas 1 a 3 en LaTeX, generadas por `experiments/tables_paper.py` desde los CSV. |
 | `figures/` | Fig. 1 a 3 en PDF, generadas por `experiments/figures_paper.py` desde los CSV de `results/` (la Fig. 1 primero con `compute`). |
 
 Compilar: `cd paper && latexmk -pdf main.tex` (en el contenedor: `apt-get install texlive-latex-extra texlive-publishers
@@ -34,6 +35,7 @@ No se pudo leer en línea: ScienceDirect rechaza la descarga automática. Por el
 ## Pendientes antes de redactar
 
 1. Elegir el título (tres opciones en `main.tex`).
-2. Redactar las secciones 1, 5, 6 y 7 (las 2 a 4 están redactadas) y el pseudocódigo de la sección 4.4.
+2. Revisión del texto completo por el grupo (todas las secciones están redactadas); la introducción es la que más
+   pesa para el editor. Falta una frase de trabajo futuro en las conclusiones y la nomenclatura.
 3. Decidir la declaración de uso de IA y el repositorio de datos.
 4. Revisar las referencias marcadas `TODO`.

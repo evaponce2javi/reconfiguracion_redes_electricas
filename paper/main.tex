@@ -40,16 +40,16 @@
 % \nota{Borrador. Unas 190 palabras como en IJEPES 2026 (Basirat et al.); verificar el límite en la guía. Cifras: §28.8, §28.12.}
 Linearized probabilistic power flow models are fast and widely used to bound bus voltages and branch flows under
 uncertain injections, but their bounds are rarely checked where operational decisions are taken: in the extreme
-tails. We show on four test systems of up to 2869 buses that Gaussian, cumulant and point-estimate methods leave
-between 0.3\% and 100\% of nonlinear AC samples outside bounds designed for 0.27\%, and that correcting the
-linearization with the mean and variance of the second-order term, as existing second-order methods do, is not
-enough. The reason is that the linearization error is skewed and heavy-tailed. We propose to bound each output with
+tails. We show on four test systems of up to 2869 buses that cumulant and point-estimate methods leave up to 12\% of
+nonlinear AC samples outside bus-voltage bounds designed for 0.27\%, and up to 100\% outside branch-current bounds,
+and that correcting the linearization with the mean and variance of the second-order term, as existing second-order
+methods do, is not enough. The reason is that the linearization error is skewed and heavy-tailed. We propose to bound each output with
 its sparse affine form, a distribution-free concentration radius, and the range of the exact second-order term,
 sampled from a closed-form quadratic model without solving any power flow. An order-statistics argument turns the
-sampled range into a provable coverage level for the second-order model. The bounds cover the AC samples in every
-tested case, from 80\% load to 95\% of the loadability limit, with dispersion levels up to 30\%, correlated sources
-and eight bounded input distributions, for bus voltages, branch voltage drops and branch currents, in about 10\,s on
-PEGASE-2869.
+sampled range into a provable coverage level for the second-order model. Whenever its assumptions hold (independent or factor-correlated
+sources with bounded support), the bound stays below the nominal level against AC samples in every tested case, from
+80\% load to 95\% of the loadability limit and with dispersion levels up to 30\%, for bus voltages, branch voltage
+drops and branch currents, in about 10\,s on PEGASE-2869.
 \end{abstract}
 
 \begin{highlights}
@@ -72,37 +72,53 @@ Branch currents \sep Coverage guarantee
 % =============================================================================================================
 \section{Introduction}\label{sec:intro}
 
-\plan{P1. Motivación. Reutilizar y acortar el primer párrafo de caja-elipse.tex (incertidumbre renovable;
-necesidad de cotas de voltaje y de carga de líneas). Sin la parte de ``rigorous containment''.}
+The growing share of wind and solar generation turns the operating point of a power system into an uncertain
+quantity \cite{prusty2017critical}. Operators and planners need to know, for a forecast state, how far bus voltages
+and branch loadings can move under the expected deviation of the injections, and they need this answer quickly and
+with a stated level of confidence. Two families of methods address the question.
 
-\plan{P2. Dos familias: (i) intervalos y aritmética afín (Vaccaro 2010; Dimitrovski 2004): deterministas, sufren
-el problema de dependencia o se vuelven muy anchos; (ii) flujo probabilístico: Monte Carlo (caro), cumulantes
-\cite{zhang2004cumulant}, estimación por puntos \cite{hong1998pem}, caos polinomial, y restricciones de azar con
-linealización en el punto AC \cite{roald2018ccacopf,lubin2019chance}. Los métodos analíticos se validan comparando
-momentos o curvas de densidad, casi nunca la cobertura de los cuantiles extremos.}
+Interval and affine-arithmetic power flow \cite{vaccaro2010AA,dimitrovski2004slack} bound the outputs for every
+realization of the inputs. Affine arithmetic keeps the dependence between quantities through shared noise symbols
+\cite{defigueiredo2004affine,comba1993affine}, but the nonlinear part of the power-flow equations is enclosed term by
+term, and at transmission scale the resulting bounds become too wide to be useful (Section~\ref{sec:limits}).
+Probabilistic power flow instead targets a quantile. Monte Carlo simulation is accurate but expensive; analytic and
+approximate methods (cumulants with Gram--Charlier or Cornish--Fisher expansions \cite{zhang2004cumulant}, point
+estimate methods \cite{hong1998pem}, polynomial chaos) and the analytic reformulations of chance-constrained optimal
+power flow \cite{roald2018ccacopf,lubin2019chance} propagate the uncertainty through the power-flow equations
+linearized at the AC operating point. These methods are usually assessed by comparing moments or density curves with
+Monte Carlo, rarely by checking how often the AC solution falls outside the bounds they produce at the level where
+decisions are taken, for instance 0.27\%.
 
-\plan{P3. Segundo orden: existe desde \cite{brucoli1985quadratic}; versión analítica moderna en
-\cite{sandoval2022second}; no lineal por holomorphic embedding \cite{liu2018holomorphic}; expansiones para la
-densidad \cite{basirat2026soeae}; estimación por puntos para las colas \cite{singh2025pem}. Todos propagan momentos
-o cumulantes, validan con curvas y llegan a 118 barras como máximo (RELATED\_WORK.md, sexta pasada).}
+The linearization error is the obvious suspect, and second-order models have been used to reduce it for a long time:
+a quadratic probabilistic load flow was proposed in 1985 \cite{brucoli1985quadratic}, an analytic second-order method
+for unbalanced distribution networks in \cite{sandoval2022second}, a nonlinear analytic solution by holomorphic
+embedding in \cite{liu2018holomorphic}; other recent work improves the density approximation
+\cite{basirat2026soeae} or the tails of point estimate methods \cite{singh2025pem}. All of them summarize the
+second-order term by its moments or cumulants, validate against density curves, and are tested on systems of at most
+118 buses. Concentration inequalities on affine forms have been used outside power
+systems \cite{bouissou2016affine}.
 
-\plan{P4. El hueco: nadie verifica (ni garantiza) la cobertura al nivel del 0,27\,\% a escala de transmisión, y
-mostramos que los momentos del segundo orden no alcanzan. Concentración sobre formas afines existe fuera de
-sistemas de potencia \cite{bouissou2016affine}.}
+This paper shows that, for bounds at a small violation level, the moments of the second-order term are not enough,
+and proposes to use its range instead. The contributions are:
+\begin{enumerate}
+\item Evidence, against nonlinear AC samples on four systems of up to 2869 buses, that linearized bounds
+(Gaussian, cumulant, point estimate) fail in the tails, and that a correction by the mean and variance of the
+second-order term still fails, because that term is strongly skewed and heavy-tailed (Sections~\ref{sec:why}
+and~\ref{sec:cases}).
+\item A bound built from the sparse affine form of each output, a distribution-free concentration radius, and the
+range of the exact second-order term, sampled from a closed-form quadratic model without solving any power flow
+(Section~\ref{sec:method}).
+\item A provable coverage level for the second-order model, from an order-statistics argument, at a small cost in
+width (Proposition~\ref{prop:cert}).
+\item The same construction for branch voltage drops and branch currents; for currents the range of the second-order
+term is indispensable (Section~\ref{sec:cases}).
+\item A validation that includes stressed loading, correlated sources, non-uniform input distributions, and the
+limits of the approach (Section~\ref{sec:limits}).
+\end{enumerate}
 
-\plan{P5. Contribuciones (lista):
-(1) evidencia de que los métodos linealizados (3$\sigma$, cumulantes, estimación por puntos) y la corrección de
-segundo orden por momentos no cubren en las colas, y de por qué (asimetría y cola pesada del error de
-linealización) [§27.1, §27.2, §28.8];
-(2) cotas por forma afín dispersa + radio de concentración + rango del término de segundo orden, muestreado de un
-modelo cuadrático cerrado, sin flujos de potencia [§28.1, §28.3];
-(3) nivel de cobertura demostrable para el modelo de segundo orden por estadísticos de orden [§28.12];
-(4) la misma construcción para caídas de voltaje y corrientes de rama, donde la corrección es imprescindible
-[§28.9];
-(5) validación en 4 sistemas hasta 2.869 barras, estrés de carga, correlación, distribuciones no uniformes, y
-límites medidos (peor caso en vértices, cobertura simultánea) [§28.2, §28.6, §28.7, §28.10].}
-
-\plan{P6. Organización del artículo.}
+Section~\ref{sec:forms} builds the affine forms and the second-order term, Section~\ref{sec:why} shows why moments
+do not suffice, Section~\ref{sec:method} presents the bound and its guarantee, Section~\ref{sec:cases} reports the
+case studies, Section~\ref{sec:limits} states the limits and Section~\ref{sec:conclusion} concludes.
 
 % =============================================================================================================
 \section{Affine forms of the power-flow outputs}\label{sec:forms}
@@ -235,72 +251,158 @@ does not cover the third and higher orders; their effect is measured against the
 Section~\ref{sec:cases}.
 
 \subsection{Algorithm and cost}
-\plan{Pseudocódigo: (1) punto AC; (2) LU dispersa y formas afines~\eqref{eq:forms}; (3) modelo de segundo orden;
-(4) $n$ muestras de $Q$ para todos los objetivos en una pasada; (5) radios~\eqref{eq:bernstein} con $\alpha_L$;
-(6) cotas~\eqref{eq:bound}. Tabla de costos [§28.12, results/b11\_timing.csv]: PEGASE-2869, 6,7\,s para voltajes y
-caídas y 10,2\,s con las 9118 puntas de rama.}
+The procedure for a forecast state and a level $\alpha$ is:
+\begin{enumerate}
+\item solve the AC power flow at the forecast state;
+\item factorize the Jacobian (sparse LU) and compute the first-order forms~\eqref{eq:forms} of all targets;
+\item compute the second-order model: the rectangular Jacobian factorization, $E$ and one adjoint vector per bus;
+\item draw $n$ samples of $\varepsilon$ and evaluate the second-order part of every target in one pass, keeping
+$q_{\min}$ and $q_{\max}$;
+\item compute the radii~\eqref{eq:bernstein} at level $\alpha_L = \alpha - 2/(n+1)$;
+\item return the bounds~\eqref{eq:bound}.
+\end{enumerate}
+Table~\ref{tab:cost} gives the cost in one process, with $n = 4000$. On PEGASE-2869 the certified bounds take
+6.7\,s for the 2359 bus voltages and 3216 branch drops, and 10.2\,s with the currents at the 9118 branch ends; a Monte
+Carlo simulation of 20\,000 AC power flows with a batched solver takes 60\,s and only estimates the quantiles, and a
+loop of individual power flows in pandapower about 3780\,s \src{RESULTS.md §28.12, C8}. The sampling step is made of
+dense matrix products and parallelizes directly.
+
+\begin{table}[t]
+\centering\small
+\caption{Cost of the certified bounds in one process (s), $n = 4000$ samples, median of three runs. ``First order'':
+AC point, sparse LU and affine forms. Source: results/b11\_timing.csv.}
+\label{tab:cost}
+\resizebox{\linewidth}{!}{\input{tables/tab_cost.tex}}
+\end{table}
 
 % =============================================================================================================
 \section{Case studies}\label{sec:cases}
 
 \subsection{Setup}
-\plan{Sistemas: IEEE-33, IEEE-118, PEGASE-1354, PEGASE-2869 (pandapower y PGLib \cite{pglib2019,thurner2018pandapower}).
-Fuentes: todas las cargas, $P$ y $Q$ separadas. Celdas: 80\,\% a 95\,\% del límite de cargabilidad,
-$\delta$ de 5 a 30\,\%. Validación: 20.000 muestras AC por celda (solver por lotes, tolerancia $10^{-9}$),
-métricas: peor objetivo, objetivos sobre 0,27\,\%, fracción de muestras con algún objetivo fuera, ancho.
-Software y versiones (README.md).}
+Four systems are used: the IEEE 33-bus feeder and IEEE 118-bus system from pandapower \cite{thurner2018pandapower},
+and PEGASE-1354 and PEGASE-2869 \cite{fliscounakis2013contingency,pglib2019}. Every load carries two symbols, one for
+its active and one for its reactive demand; the slack bus balances the system unless stated otherwise. The design
+dispersion is $\delta = 15\%$ for IEEE-33 and $5\%$ for the others. Loading is varied by scaling demand and scheduled
+generation, from 80\% of the base case to 95\% of the loadability limit found by continuation. Each case is checked
+against 20\,000 AC power-flow samples solved to a mismatch of $10^{-9}$\,p.u.; samples without an AC solution, which
+occur only near the loadability limit with large dispersion, are reported and excluded. A target violates its bound
+in a sample when the AC value lies outside by more than $10^{-8}$\,p.u. The level is $\alpha = 0.27\%$ per target.
+Code, data and every table are generated by scripts in the accompanying repository.
 
 \subsection{Linearized bounds fail in the tails}
-\plan{Tabla: 3$\sigma$, cumulantes + Cornish-Fisher, estimación por puntos + Cornish-Fisher, Bernstein sin corregir
-y con el rango, en las 3 celdas de los 4 sistemas [§28.8, results/b8\_ppf\_baselines.csv].}
+Table~\ref{tab:baselines} compares the proposed bound with the cumulant method and Hong's $2m+1$ point estimate
+method \cite{zhang2004cumulant,hong1998pem}, both with a fourth-order Cornish--Fisher expansion, and with a
+$3\sigma$ radius that already includes the range of the second-order term. The point estimate method uses the exact
+AC power flow (5902 solutions on PEGASE-2869), but source by source; we add the cumulants of the individual
+contributions, which is exact for independent sources. Both published methods give intervals about half as wide as
+the proposed one and leave up to 12.1\% (cumulants) and 6.5\% (point estimate) of the AC samples outside the worst
+bus; on PEGASE-2869 at its design point, 782 and 760 of its 2318 buses exceed the nominal level. The $3\sigma$
+radius with the range fails on the PEGASE systems, where the linear part is not normal. The proposed bound stays
+below 0.27\% everywhere \src{RESULTS.md §28.8}.
+
+\begin{table}[t]
+\centering\small
+\caption{Worst bus-voltage violation (\%) against 20\,000 AC samples per cell, and width of the cumulant interval over
+the proposed one (median over buses). Source: results/b8\_ppf\_baselines.csv.}
+\label{tab:baselines}
+\resizebox{\linewidth}{!}{\input{tables/tab_baselines.tex}}
+\end{table}
 
 \subsection{Coverage across loading and dispersion}
+Fig.~\ref{fig:sweep} and Table~\ref{tab:coverage} cover every cell of the load--dispersion grids: 25 cells for
+IEEE-33 and PEGASE-2869 and 12 for IEEE-118 and PEGASE-1354. No cell has a bus or a drop above the nominal level;
+the worst bus violation is 0.045\% \src{RESULTS.md §28.3, §28.7}. The bound is about half the worst case of the
+linear model on PEGASE-2869 and equal to it on IEEE-118, where few loads drive each bus and there is nothing to
+average. Close to the loadability limit with $\delta = 30\%$, up to a third of the AC samples have no solution; the
+coverage in those cells refers to the samples that converged.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_sweep.pdf}
 \caption{Worst bus-voltage violation against 20\,000 AC samples per cell on PEGASE-2869, over load factor (up to 95\%
 of the loadability limit) and dispersion. Cells outlined exceed the nominal 0.27\%. (a) First-order $3\sigma$ bound.
 (b) $3\sigma$ with the mean and variance of the quadratic term. (c) Proposed bound: Bernstein radius plus the sampled
-range of the second-order term.}
+range of the second-order term. Sources: results/b4\_sweep.csv, results/b5\_sweep.csv.}
 \label{fig:sweep}
 \end{figure}
-\plan{Texto: la Fig.~\ref{fig:sweep} y la tabla con los dos sistemas nuevos [§28.3, §28.7, b5\_sweep.csv,
-b7\_generality.csv].}
+
+\begin{table}[t]
+\centering\small
+\caption{Coverage of the proposed bound over the load--dispersion grids (Bernstein radius with the range of 4000
+samples of the second-order term, uncertified level). Sources: results/b5\_sweep.csv, results/b7\_generality.csv.}
+\label{tab:coverage}
+\resizebox{\linewidth}{!}{\input{tables/tab_coverage.tex}}
+\end{table}
 
 \subsection{Branch voltage drops and branch currents}
-\plan{Tabla: caídas (forma afín frente a restar intervalos, 4 a 21 veces) [§28.1, b5\_mc.csv, b5\_width.csv];
-corrientes (error lineal hasta 10,7\,p.u.; sin el rango, hasta 90\,\% de violación; con el rango, 0) [§28.9,
-b9\_branch\_currents.csv].}
+Because the affine form of a drop is the difference of two bus forms, its bound is much tighter than the difference
+of two bus intervals: 6.2 times on PEGASE-2869 and 21 times on IEEE-33 in median, with the same coverage
+\src{RESULTS.md §28.1}. For branch currents the second-order range is indispensable (Fig.~\ref{fig:currents}): the
+modulus $|I|$ is strongly nonlinear for branches with small or strongly varying flow, and the first-order error
+reaches 10.7\,p.u. Without the range, the Bernstein bound leaves up to 90\% of the samples outside its worst branch
+end, the cumulant and point estimate methods up to 100\%; with it, the worst branch end is at 0.18\%. For currents
+the concentration also pays: on PEGASE-2869 the worst-case bound with the same range is 1.64 times wider in median
+\src{RESULTS.md §28.9}.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig3_currents.pdf}
-\caption{Branch currents: worst violation over the three cells of Table~X (design point; load 1.2 with
-$\delta = 30\%$; 95\% of the loadability limit with $\delta = 15\%$), against 20\,000 AC samples per cell.}
+\caption{Branch currents at both ends of every branch: worst violation over the three cells of
+Table~\ref{tab:baselines}, against 20\,000 AC samples per cell. Source: results/b9\_branch\_currents.csv.}
 \label{fig:currents}
 \end{figure}
 
 \subsection{Correlated sources and non-uniform distributions}
-\plan{[§28.6, b6\_correlated.csv]: factores compartidos cubren, la concentración se pierde con un factor común
-fuerte, la cópula mal especificada falla, la slack sola falla con correlación fuerte. [§28.10,
-b10\_marginals.csv]: con media cero y soporte acotado cubren; fuera del soporte, nada.}
+With correlation written as shared symbols (one global factor or one per spectral zone, correlations 0.155 to 0.845
+between sources of the same zone), the bound keeps its coverage (worst bus 0.005\% on PEGASE-2869), but much of the
+gain of concentration is lost: its width rises from 0.54 to between 0.82 and 0.95 of the worst case, because a common
+factor does not average out. Ignoring the correlation is not an option: the bound built as if the sources were
+independent leaves up to 88.5\% of the samples outside. A factor model that only matches the Pearson correlation of a
+Gaussian copula also fails (up to 3.4\%), and with the slack bus alone and strongly correlated loads the
+linearization itself breaks on PEGASE-2869; with generators sharing the imbalance it does not \src{RESULTS.md
+§28.6}. With independent symbols of zero mean and support in $[-1,1]$, the bound covers for all eight such
+distributions tested, including a U-shaped one whose variance (1/2) exceeds the default $\sigma_\varepsilon^2$; with
+unbounded inputs or inputs that leave the support, no bound covers, not even the worst case \src{RESULTS.md §28.10}.
 
-\subsection{Certified level and computational cost}
-\plan{[§28.12, b11\_certified.csv, b11\_timing.csv]. Comparar con Monte Carlo AC por lotes (60\,s) y con pandapower
-en lazo (unos 3.800\,s) [C8].}
+\subsection{Certified level}
+With $\alpha_L = \alpha - 2/(n+1)$ and $n = 4000$, the bounds widen by 2.2\% in median (9.6\% with $n = 1000$) and
+no cell of the twelve of Table~\ref{tab:baselines} exceeds the nominal level for buses, drops or currents; the worst
+target is at 0.15\% \src{RESULTS.md §28.12}.
 
 % =============================================================================================================
 \section{Limits}\label{sec:limits}
-\plan{Lista honesta, con su respaldo:
-(a) no es una garantía determinista: el peor caso de segundo orden no encierra la solución AC en los vértices a
-escala de transmisión [§28.2]; (b) la cobertura simultánea sin supuesto de distribución cuesta lo mismo que el peor
-caso [§28.7]; (c) la ventaja sobre el peor caso depende de cuántas fuentes mueven cada salida (IEEE-118: ninguna)
-[§28.7]; (d) la correlación debe entrar como estructura de factores; con la slack sola y correlación fuerte falla
-la linealización [§28.6]; (e) el soporte acotado es esencial [§28.10]; (f) tercer orden medido, no acotado; (g)
-sin límites de reactivos de los generadores; (h) sin datos reales de carga.}
+\begin{itemize}
+\item \emph{No deterministic guarantee.} Taking the extreme of the second-order model over the vertices of the
+noise box, by a flip search guided by the second-order model, does not enclose the AC solution at transmission scale:
+on PEGASE-2869, with all sources at an extreme, up to 1921 of 2359 buses fall outside, by up to 63\% of the bound's
+width, because third and higher orders matter there; on IEEE-33 the excess is $6\cdot10^{-6}$\,p.u.
+\src{RESULTS.md §28.2}. Enclosing the quadratic term term by term, as interval-style affine arithmetic does, widens the
+worst-case bound by two orders of magnitude \src{§27.1}.
+\item \emph{Simultaneous coverage.} With a union bound over all buses, a distribution-free radius reaches the worst
+case of the linear model on all four systems; a Gaussian radius with the union bound covers in practice but without
+a guarantee \src{§28.7}. Per target, the proposed bound already keeps the share of samples with any bus or drop
+outside below 0.085\% in the grids, an observation, not a guarantee.
+\item \emph{Benefit depends on the network.} The gain of concentration over the worst case requires many comparable
+sources per output; on IEEE-118 there is none \src{§28.7}.
+\item \emph{Correlation} must enter as a factor structure of shared symbols; with the slack bus alone and strongly
+correlated loads, the linearization breaks on PEGASE-2869 \src{§28.6}.
+\item \emph{Bounded support} is essential: $\delta$ must be the actual half-width of each injection \src{§28.10}.
+\item \emph{Third order} is measured against AC, not bounded.
+\item \emph{Model scope:} no reactive-power limits on generators, balanced networks, synthetic load variations
+(no measured load or renewable data).
+\end{itemize}
 
 \section{Conclusions}\label{sec:conclusion}
-\plan{Cuatro frases: qué falla, por qué, qué lo arregla, con qué garantía y a qué costo.}
+Linearized probabilistic bounds on bus voltages and branch currents fail in the tails because the linearization
+error is skewed and heavy-tailed; correcting them with the moments of the second-order term is not enough. Adding
+the range of the exact second-order term, sampled from a closed-form model without solving power flows, to a
+distribution-free concentration radius gives bounds that cover against the AC power flow in every tested case where
+the assumptions hold, with a level that can be proved for the second-order model at a cost of a few percent in width.
+On a 2869-bus system the bounds for all bus voltages, branch drops and branch currents take about 10\,s.
+\plan{Trabajo futuro, una frase: uso de las cotas en restricciones de azar de un OPF; datos reales; cotas del tercer
+orden.}
 
+% =============================================================================================================
 % =============================================================================================================
 \section*{CRediT authorship contribution statement}
 \nota{Completar (IJEPES lo exige; ver el formato en Basirat et al. 2026).}
