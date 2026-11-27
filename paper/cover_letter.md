@@ -7,8 +7,8 @@
 
 Dear Editor,
 
-We submit the manuscript "Coverage-guaranteed probabilistic bounds on voltages and branch currents from sparse
-affine forms and the range of the second-order term" for consideration as a research article in *Electric Power
+We submit the manuscript "Certified probabilistic voltage and branch-current bounds with the range of the
+second-order term" for consideration as a research article in *Electric Power
 Systems Research*.
 
 Linearized probabilistic power flow underlies much of today's uncertainty analysis and chance-constrained operation.

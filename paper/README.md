@@ -49,8 +49,7 @@ repositorio de la PUCV).
 ## Pendientes antes de enviar
 
 1. Revisión del texto completo por el grupo; la introducción es la que más pesa para el editor.
-2. Elegir el título (tres opciones comentadas en `main.tex`).
-3. CRediT (roles de cada autor), y ajustar los borradores de las declaraciones de uso de IA y de datos.
-4. Publicar el repositorio con un DOI y poner el enlace en la declaración de datos y en la carta.
-5. Verificar la guía de EPSR (sección anterior) y quitar las marcas en rojo y azul (`\plan`, `\nota`, `\src`).
-6. Al enviar, no marcar la opción de acceso abierto.
+2. Ajustar los borradores de las declaraciones de uso de IA y de datos.
+3. Publicar el repositorio con un DOI y poner el enlace en la declaración de datos y en la carta.
+4. Verificar la guía de EPSR (sección anterior) y quitar las marcas en rojo y azul (`\plan`, `\nota`, `\src`).
+5. Al enviar, no marcar la opción de acceso abierto.
